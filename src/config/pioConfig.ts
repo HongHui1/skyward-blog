@@ -11,7 +11,7 @@ export const pioConfig: PioConfig = {
 	hiddenOnMobile: true, // 默认在移动设备上隐藏
 	hideAboutMenu: false, // 隐藏内置 About 菜单按钮
 	dialog: {
-		welcome: "Welcome to Mizuki Website!", // 欢迎词
+		welcome: "", // 首页首屏不显示模板欢迎气泡
 		touch: [
 			"What are you doing?",
 			"Stop touching me!",

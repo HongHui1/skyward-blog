@@ -4,10 +4,17 @@ import { i18n } from "@i18n/translation";
 import { initPostIdMap } from "@utils/permalink-utils";
 import { getCategoryUrl, getPostUrl } from "@utils/url-utils";
 
+function shouldIncludePost(data: { draft?: boolean; hidden?: boolean }) {
+	if (data.hidden === true) {
+		return false;
+	}
+	return import.meta.env.PROD ? data.draft !== true : true;
+}
+
 // // Retrieve posts and sort them by publication date
 async function getRawSortedPosts() {
 	const allBlogPosts = await getCollection("posts", ({ data }) => {
-		return import.meta.env.PROD ? data.draft !== true : true;
+		return shouldIncludePost(data);
 	});
 
 	const sorted = allBlogPosts.sort((a, b) => {
@@ -83,7 +90,7 @@ export interface Tag {
 
 export async function getTagList(): Promise<Tag[]> {
 	const allBlogPosts = await getCollection<"posts">("posts", ({ data }) => {
-		return import.meta.env.PROD ? data.draft !== true : true;
+		return shouldIncludePost(data);
 	});
 
 	const countMap: Record<string, number> = {};
@@ -112,7 +119,7 @@ export interface Category {
 
 export async function getCategoryList(): Promise<Category[]> {
 	const allBlogPosts = await getCollection<"posts">("posts", ({ data }) => {
-		return import.meta.env.PROD ? data.draft !== true : true;
+		return shouldIncludePost(data);
 	});
 	const count: Record<string, number> = {};
 	allBlogPosts.forEach((post: { data: { category: string | null } }) => {
@@ -296,7 +303,7 @@ export async function getRelatedPosts(
 	};
 
 	const allPosts = await getCollection<"posts">("posts", ({ data }) => {
-		return import.meta.env.PROD ? data.draft !== true : true;
+		return shouldIncludePost(data);
 	});
 
 	// 排除自身和加密文章

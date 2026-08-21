@@ -82,9 +82,13 @@ const formatExperience = (exp: { years: number; months: number }) => {
 						{getLevelText(skill.level)}
 					</span>
 				</div>
-				<p class="text-xs text-black/50 dark:text-white/50">
-					{formatExperience(skill.experience)}
-				</p>
+				{
+					skill.experience && (
+						<p class="text-xs text-black/50 dark:text-white/50">
+							{formatExperience(skill.experience)}
+						</p>
+					)
+				}
 			</div>
 		</div>
 

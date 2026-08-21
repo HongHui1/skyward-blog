@@ -58,7 +58,7 @@ export const zh_CN: Translation = {
 	[Key.publishedAt]: "发布于",
 	[Key.license]: "许可协议",
 	[Key.anime]: "追番",
-	[Key.diary]: "日记",
+	[Key.diary]: "杂谈",
 
 	// 番剧页面
 	[Key.animeTitle]: "我的追番记录",
@@ -81,11 +81,11 @@ export const zh_CN: Translation = {
 		"请在 src/config/siteConfig.ts 文件中设置您的 Bangumi userId",
 
 	// 短文页面
-	[Key.diarySubtitle]: "随时随地，分享生活",
-	[Key.diaryNoResults]: "没有匹配的日记",
-	[Key.diaryCount]: "条日记",
+	[Key.diarySubtitle]: "想到什么，就随手记下什么",
+	[Key.diaryNoResults]: "还没有杂谈",
+	[Key.diaryCount]: "条杂谈",
 
-	[Key.diaryTips]: "只展示最近30条日记",
+	[Key.diaryTips]: "以后想到什么，就从这里慢慢开始记录",
 	[Key.diaryMinutesAgo]: "分钟前",
 	[Key.diaryHoursAgo]: "小时前",
 	[Key.diaryDaysAgo]: "天前",
@@ -132,9 +132,9 @@ export const zh_CN: Translation = {
 	[Key.albumsNoResults]: "没有匹配的相册",
 
 	// 设备页面
-	[Key.devices]: "我的设备",
-	[Key.devicesSubtitle]: "这里展示了我日常使用的各类设备",
-	[Key.devicesViewDetails]: "查看详情",
+	[Key.devices]: "物品分享",
+	[Key.devicesSubtitle]: "分享一些我正在使用、觉得不错的物品",
+	[Key.devicesViewDetails]: "查看官方介绍",
 
 	// 项目展示页面
 	[Key.projects]: "项目展示",
@@ -165,12 +165,14 @@ export const zh_CN: Translation = {
 
 	// 技能展示页面
 	[Key.skills]: "技能展示",
-	[Key.skillsSubtitle]: "我的技术技能和专业知识",
+	[Key.skillsSubtitle]: "正在学习的编程语言与计算机基础",
 	[Key.skillsFrontend]: "前端开发",
 	[Key.skillsBackend]: "后端开发",
 	[Key.skillsDatabase]: "数据库",
 	[Key.skillsTools]: "开发工具",
 	[Key.skillsOther]: "其他技能",
+	[Key.skillsLanguage]: "编程语言",
+	[Key.skillsStudy]: "正在学习",
 	[Key.skillLevel]: "熟练度",
 	[Key.skillLevelBeginner]: "初学者",
 	[Key.skillLevelIntermediate]: "中级",
@@ -192,23 +194,27 @@ export const zh_CN: Translation = {
 	[Key.noData]: "暂无数据",
 
 	// AI 工具（关于页面）
-	[Key.aiTools]: "我使用的 AI 工具",
-	[Key.aiToolsSubtitle]: "目前在日常工作流中常用的 AI 助手与服务",
-	[Key.aiToolsCategoryChat]: "对话助手",
-	[Key.aiToolsCategoryCoding]: "编码协作",
-	[Key.aiToolsCategoryImage]: "图像生成",
-	[Key.aiToolsCategoryAudio]: "音频",
-	[Key.aiToolsCategoryVideo]: "视频",
-	[Key.aiToolsCategoryWriting]: "写作 / 笔记",
-	[Key.aiToolsCategorySearch]: "搜索 / 研究",
-	[Key.aiToolsCategoryOther]: "其他",
+	[Key.aiTools]: "工具栏",
+	[Key.aiToolsSubtitle]: "学习、创作、文件处理与日常使用的工具集合",
+	[Key.aiToolsCategoryChat]: "AI 助手",
+	[Key.aiToolsCategoryCoding]: "编程学习",
+	[Key.aiToolsCategoryImage]: "图片与素材",
+	[Key.aiToolsCategoryAudio]: "音视频播放",
+	[Key.aiToolsCategoryVideo]: "下载工具",
+	[Key.aiToolsCategoryWriting]: "文档与转换",
+	[Key.aiToolsCategorySearch]: "系统与文件",
+	[Key.aiToolsCategoryOther]: "绘图与白板",
 	[Key.aiToolsFrequencyDaily]: "每天",
 	[Key.aiToolsFrequencyWeekly]: "每周",
 	[Key.aiToolsFrequencyOccasional]: "偶尔",
 	[Key.aiToolsFrequencyExperimental]: "尝鲜",
 	[Key.aiToolsUsage]: "使用量",
-	[Key.aiToolsVisit]: "前往官网",
-	[Key.aiToolsNoResults]: "没有匹配的 AI 工具",
+	[Key.aiToolsVisit]: "打开工具",
+	[Key.aiToolsNoResults]: "没有匹配的工具",
+	[Key.aiToolsRating]: "站主推荐",
+	[Key.aiToolsRecommendation]: "推荐理由",
+	[Key.aiToolsBestFor]: "适合",
+	[Key.aiToolsHoverHint]: "悬停工具卡查看推荐理由与适用场景",
 
 	// 时间线页面
 	[Key.timeline]: "时间线",

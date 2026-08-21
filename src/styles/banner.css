@@ -982,3 +982,161 @@ html.is-page-transitioning .banner-page-overlay {
   filter: none !important;
   transition: none !important;
 }
+
+/* ==========================================================================
+   SkyCity 首页首屏：全视口沉浸式入口
+   仅作用于 banner 模式首页，其他页面和壁纸模式保持原有行为
+   ========================================================================== */
+.banner-contrast-overlay,
+.home-scroll-cue {
+  display: none;
+}
+
+body.enable-banner:not(.fullscreen-banner):has(#navbar[data-is-home="true"]) #top-row {
+  height: 100vh !important;
+  height: 100svh !important;
+  max-width: none !important;
+  padding-inline: 0 !important;
+}
+
+body.enable-banner:not(.fullscreen-banner):has(#navbar[data-is-home="true"]) #banner-wrapper {
+  top: 0 !important;
+  height: 100vh !important;
+  height: 100svh !important;
+  min-height: 100vh !important;
+  min-height: 100svh !important;
+  max-height: none !important;
+  transform: none !important;
+}
+
+body.enable-banner:not(.fullscreen-banner):has(#navbar[data-is-home="true"]) #banner-wrapper :is(
+  #banner,
+  #banner-single-container,
+  #banner-single-container img,
+  #banner-carousel,
+  .banner-image-slot-mobile,
+  .banner-image-slot-desktop,
+  .banner-image-slot-mobile img,
+  .banner-image-slot-desktop img
+) {
+  height: 100% !important;
+  min-height: 100% !important;
+  transform: none !important;
+}
+
+body.enable-banner:not(.fullscreen-banner):has(#navbar[data-is-home="true"]) .banner-contrast-overlay {
+  display: block;
+  background: linear-gradient(
+    180deg,
+    rgba(8, 15, 25, 0.38) 0%,
+    rgba(8, 15, 25, 0.1) 38%,
+    rgba(8, 15, 25, 0.24) 72%,
+    rgba(8, 15, 25, 0.58) 100%
+  );
+}
+
+body.enable-banner:not(.fullscreen-banner):has(#navbar[data-is-home="true"]) #main-content-start {
+  top: 100vh !important;
+  top: 100svh !important;
+  scroll-margin-top: 1rem;
+}
+
+body.enable-banner:not(.fullscreen-banner):has(#navbar[data-is-home="true"]) #main-grid {
+  transform: none !important;
+}
+
+body.enable-banner:not(.fullscreen-banner):has(#navbar[data-is-home="true"]) #header-waves {
+  height: clamp(2.75rem, 6svh, 4.5rem) !important;
+  min-height: 0 !important;
+  max-height: none !important;
+  opacity: 0.62;
+}
+
+body.enable-banner:not(.fullscreen-banner):has(#navbar[data-is-home="true"]) #header-waves > svg {
+  height: 100% !important;
+  min-height: 0 !important;
+  max-height: none !important;
+}
+
+body.enable-banner:not(.fullscreen-banner):has(#navbar[data-is-home="true"]) .home-scroll-cue {
+  display: flex;
+  left: 50%;
+  bottom: clamp(3.75rem, 8svh, 5.75rem);
+  transform: translateX(-50%);
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  text-shadow: 0 2px 12px rgba(0, 0, 0, 0.62);
+  animation: home-scroll-cue-float 1.8s ease-in-out infinite;
+}
+
+body.enable-banner:not(.fullscreen-banner):has(#navbar[data-is-home="true"]) .home-scroll-cue:hover {
+  color: white;
+}
+
+body.enable-banner:not(.fullscreen-banner):has(#navbar[data-is-home="true"]) #navbar > div.absolute {
+  display: none;
+}
+
+body.enable-banner:not(.fullscreen-banner):has(#navbar[data-is-home="true"]) #navbar .btn-plain,
+body.enable-banner:not(.fullscreen-banner):has(#navbar[data-is-home="true"]) #navbar > .navbar-shell > a span {
+  color: rgba(255, 255, 255, 0.92) !important;
+}
+
+body.enable-banner:not(.fullscreen-banner):has(#navbar[data-is-home="true"]) .top-gradient-highlight {
+  background: linear-gradient(
+    to bottom,
+    rgba(7, 12, 20, 0.46) 0%,
+    rgba(7, 12, 20, 0.2) 48%,
+    transparent 100%
+  );
+}
+
+@media (width >= 1280px) {
+  body.enable-banner:not(.fullscreen-banner):has(#navbar[data-is-home="true"]) #navbar-wrapper {
+    top: 1rem;
+    width: fit-content;
+    max-width: calc(100vw - 2rem);
+    margin-inline: auto;
+  }
+
+  body.enable-banner:not(.fullscreen-banner):has(#navbar[data-is-home="true"]) #navbar {
+    width: fit-content;
+    max-width: calc(100vw - 2rem);
+  }
+
+  body.enable-banner:not(.fullscreen-banner):has(#navbar[data-is-home="true"]) #navbar > .navbar-shell {
+    width: max-content;
+    max-width: calc(100vw - 2rem) !important;
+    height: 3.75rem !important;
+    padding-inline: 0.75rem;
+    background: rgba(11, 18, 30, 0.46) !important;
+    border: 1px solid rgba(255, 255, 255, 0.2) !important;
+    border-radius: 999px !important;
+    box-shadow: 0 12px 36px rgba(5, 10, 18, 0.22) !important;
+    backdrop-filter: blur(18px) saturate(125%) !important;
+    -webkit-backdrop-filter: blur(18px) saturate(125%) !important;
+  }
+}
+
+@keyframes home-scroll-cue-float {
+  0%,
+  100% {
+    transform: translate(-50%, 0);
+  }
+  50% {
+    transform: translate(-50%, 0.35rem);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  body.enable-banner:not(.fullscreen-banner):has(#navbar[data-is-home="true"]) .home-scroll-cue {
+    animation: none;
+  }
+}
+
+@media (width < 768px) {
+  html {
+    scrollbar-gutter: auto;
+  }
+}

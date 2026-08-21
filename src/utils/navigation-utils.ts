@@ -3,6 +3,8 @@
  * 提供统一的页面导航功能，支持 Swup 无刷新跳转
  */
 
+import { withoutBase } from "./base-path";
+
 /**
  * 导航到指定页面
  * @param url 目标页面URL
@@ -242,7 +244,9 @@ export function initLinkPreloading(): void {
  * 获取当前页面路径
  */
 export function getCurrentPath(): string {
-	return typeof window !== "undefined" ? window.location.pathname : "";
+	return typeof window !== "undefined"
+		? withoutBase(window.location.pathname)
+		: "";
 }
 
 /**

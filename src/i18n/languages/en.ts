@@ -251,6 +251,8 @@ export const en: Translation = {
 	[Key.skillsDatabase]: "Database",
 	[Key.skillsTools]: "Development Tools",
 	[Key.skillsOther]: "Other Skills",
+	[Key.skillsLanguage]: "Programming Languages",
+	[Key.skillsStudy]: "Currently Learning",
 	[Key.skillLevel]: "Proficiency",
 	[Key.skillLevelBeginner]: "Beginner",
 	[Key.skillLevelIntermediate]: "Intermediate",
@@ -290,6 +292,11 @@ export const en: Translation = {
 	[Key.aiToolsUsage]: "Usage",
 	[Key.aiToolsVisit]: "Visit",
 	[Key.aiToolsNoResults]: "No matching AI tools",
+	[Key.aiToolsRating]: "Cloudward recommends",
+	[Key.aiToolsRecommendation]: "Why it stands out",
+	[Key.aiToolsBestFor]: "Best for",
+	[Key.aiToolsHoverHint]:
+		"Hover a tool card to see why I recommend it and when it fits",
 
 	// Timeline Page
 	[Key.timeline]: "Timeline",

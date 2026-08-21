@@ -34,9 +34,18 @@ const children =
 	) ?? [];
 
 const hasChildren = children.length > 0;
+const internalChildPaths = children
+	.filter((child) => !child.external && child.url !== "#")
+	.map((child) => url(child.url))
+	.join("|");
 ---
 
-<div class:list={["dropdown-container group", className]} data-dropdown>
+<div
+	class:list={["dropdown-container group sky-nav-item", className]}
+	data-dropdown
+	data-nav-url={!hasChildren && !link.external ? url(link.url) : undefined}
+	data-nav-paths={hasChildren ? internalChildPaths : undefined}
+>
 	{
 		hasChildren ? (
 			<>

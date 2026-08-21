@@ -1,6 +1,8 @@
 ---
 title: Encrypted Post
 published: 2024-01-15
+draft: true
+hidden: true
 description: This is an article for testing the page encryption feature
 encrypted: true
 pinned: true

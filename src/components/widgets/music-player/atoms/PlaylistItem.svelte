@@ -1,6 +1,7 @@
 <script lang="ts">
 import Icon from "@iconify/svelte";
 
+import { withBase } from "../../../../utils/base-path";
 import type { Song } from "../types";
 
 interface Props {
@@ -22,13 +23,7 @@ const {
 }: Props = $props();
 
 function getAssetPath(path: string): string {
-	if (path.startsWith("http://") || path.startsWith("https://")) {
-		return path;
-	}
-	if (path.startsWith("/")) {
-		return path;
-	}
-	return `/${path}`;
+	return withBase(path);
 }
 </script>
 

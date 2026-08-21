@@ -2,13 +2,16 @@
 import { i18n } from "@i18n/translation";
 import { Icon } from "astro-icon/components";
 import I18nKey from "../../../i18n/i18nKey";
+import { withBase } from "../../../utils/base-path";
 import type { AlbumCardProps } from "./types";
 
 const { album } = Astro.props as AlbumCardProps;
+const albumHref = withBase(`/albums/${album.id}/`);
+const albumCover = album.cover ? withBase(album.cover) : "";
 ---
 
 <a
-	href={`/albums/${album.id}/`}
+	href={albumHref}
 	data-tags={album.tags?.join(",") || ""}
 	class="album-card group relative block overflow-hidden rounded-xl transition-all duration-300 hover:shadow-xl hover:-translate-y-1"
 >
@@ -17,7 +20,7 @@ const { album } = Astro.props as AlbumCardProps;
 		{
 			album.cover ? (
 				<img
-					src={album.cover}
+					src={albumCover}
 					alt={album.title}
 					class="w-full h-full object-cover pointer-events-none transition-transform duration-500 group-hover:scale-105"
 					loading="lazy"

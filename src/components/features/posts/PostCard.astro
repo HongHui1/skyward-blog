@@ -46,6 +46,8 @@ const homeContent = getPostHomeContent(
 		className,
 	]}
 	style={style}
+	data-sky-shared-card
+	data-sky-shared-href={url}
 >
 	<div
 		class:list={[
@@ -59,6 +61,7 @@ const homeContent = getPostHomeContent(
 	>
 		<a
 			href={url}
+			data-sky-shared-title
 			class="transition group w-full block font-bold mb-3 text-3xl text-90
         hover:text-(--primary) dark:hover:text-(--primary)
         active:text-(--title-active) dark:active:text-(--title-active)
@@ -144,6 +147,7 @@ const homeContent = getPostHomeContent(
 		hasCover && (
 			<a
 				href={url}
+				data-sky-shared-cover
 				aria-label={title}
 				class:list={[
 					"group",

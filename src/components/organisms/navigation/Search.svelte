@@ -246,14 +246,15 @@ onDestroy(() => {
 
 <!-- search bar for desktop view (collapsed by default) -->
 <div class="hidden lg:block relative w-11 h-11 shrink-0">
-	<button
+	<div
 		id="search-bar"
+		role="search"
 		class="flex transition-all items-center h-11 rounded-lg absolute right-0 top-0 shrink-0 border-0 bg-transparent cursor-pointer
             {isDesktopSearchExpanded
 			? 'bg-black/4 hover:bg-black/6 focus-within:bg-black/6 dark:bg-white/5 dark:hover:bg-white/10 dark:focus-within:bg-white/10'
 			: 'btn-plain active:scale-90'}
             {isDesktopSearchExpanded ? 'w-48' : 'w-11'}"
-		aria-label="Search"
+		aria-label="站内搜索"
 		onmouseenter={() => {
 			if (!isDesktopSearchExpanded) {
 				toggleDesktopSearch();
@@ -278,6 +279,7 @@ onDestroy(() => {
 		<input
 			id="search-input-desktop"
 			placeholder={i18n(I18nKey.search)}
+			aria-label={i18n(I18nKey.search)}
 			bind:value={keywordDesktop}
 			onfocus={() => {
 				clearTimeout(blurTimer);
@@ -292,7 +294,7 @@ onDestroy(() => {
 				? 'w-36'
 				: 'w-0'} text-black/50 dark:text-white/50"
 		/>
-	</button>
+	</div>
 </div>
 
 <!-- toggle btn for phone/tablet view -->

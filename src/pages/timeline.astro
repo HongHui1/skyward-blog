@@ -9,12 +9,14 @@ import { siteConfig } from "../config";
 import { timelineData } from "../data/timeline";
 import I18nKey from "../i18n/i18nKey";
 import { i18n } from "../i18n/translation";
+import { url } from "../utils/url-utils";
 
 if (!siteConfig.featurePages.timeline) {
-	return Astro.redirect("/404/");
+	return Astro.redirect(url("/404/"));
 }
 
 const types = ["education", "work", "project", "achievement"] as const;
+const filterScriptUrl = url("/js/filter-tabs-handler.js");
 
 const getTypeIcon = (type: string) => {
 	switch (type) {
@@ -75,7 +77,7 @@ const subtitle = i18n(I18nKey.timelineSubtitle);
 		});
 	</script>
 
-	<script is:inline src="/js/filter-tabs-handler.js"></script>
+	<script is:inline src={filterScriptUrl}></script>
 
 	<div
 		class="flex w-full rounded-(--radius-large) overflow-hidden relative min-h-32"

@@ -8,13 +8,15 @@ import { siteConfig } from "../config";
 import { getAllTags, getDiaryList } from "../data/diary";
 import I18nKey from "../i18n/i18nKey";
 import { i18n } from "../i18n/translation";
+import { url } from "../utils/url-utils";
 
 if (!siteConfig.featurePages.diary) {
-	return Astro.redirect("/404/");
+	return Astro.redirect(url("/404/"));
 }
 
 const moments = getDiaryList();
 const allTags = getAllTags();
+const filterScriptUrl = url("/js/filter-tabs-handler.js");
 
 const filterTabs = [
 	{
@@ -50,7 +52,7 @@ const subtitle = i18n(I18nKey.diarySubtitle);
 		});
 	</script>
 
-	<script is:inline src="/js/filter-tabs-handler.js"></script>
+	<script is:inline src={filterScriptUrl}></script>
 
 	<div
 		class="flex w-full rounded-(--radius-large) overflow-hidden relative min-h-32"
@@ -294,7 +296,7 @@ const subtitle = i18n(I18nKey.diarySubtitle);
 									tagsAttr +
 									'">' +
 									'<div class="p-5">' +
-									'<p class="text-sm md:text-base text-black/90 dark:text-white/90 leading-relaxed mb-3">' +
+									'<p class="text-sm md:text-base text-black/90 dark:text-white/90 leading-relaxed whitespace-pre-line mb-3">' +
 									escapeHtml(moment.content) +
 									"</p>" +
 									imagesHtml +

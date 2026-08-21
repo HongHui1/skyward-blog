@@ -301,6 +301,7 @@ const getActivePadding = (level: number): string => {
 			{#each tocItems as item}
 				<button
 					onclick={() => scrollToHeading(item.id)}
+					aria-label={item.text}
 					class="toc-item level-{item.level}"
 					class:active={activeId === item.id}
 					style="padding-left: {activeId === item.id

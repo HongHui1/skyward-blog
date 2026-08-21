@@ -3,6 +3,7 @@ import Icon from "@iconify/svelte";
 
 import Key from "../../../../i18n/i18nKey";
 import { i18n } from "../../../../i18n/translation";
+import { withBase } from "../../../../utils/base-path";
 
 interface Props {
 	cover: string;
@@ -23,13 +24,7 @@ const {
 }: Props = $props();
 
 function getAssetPath(path: string): string {
-	if (path.startsWith("http://") || path.startsWith("https://")) {
-		return path;
-	}
-	if (path.startsWith("/")) {
-		return path;
-	}
-	return `/${path}`;
+	return withBase(path);
 }
 
 const containerClasses = {

@@ -67,9 +67,7 @@ function setVolume(volume: number) {
 }
 </script>
 
-<div
-	class="fab-music-panel card-base shadow-xl rounded-2xl p-4 w-[20rem] max-w-[80vw]"
->
+<div class="fab-music-panel card-base p-4">
 	<div class="fab-music-header">
 		<SidebarCover
 			currentSong={playerState.currentSong}
@@ -116,11 +114,13 @@ function setVolume(volume: number) {
 
 <style>
 	.fab-music-panel {
-		border-radius: 1.25rem;
-		backdrop-filter: blur(12px);
-		-webkit-backdrop-filter: blur(12px);
-		border: 1px solid color-mix(in srgb, var(--line-color) 65%, transparent);
-		box-shadow: 0 10px 28px rgba(15, 23, 42, 0.08);
+		width: min(22rem, calc(100vw - 1.5rem));
+		max-height: min(72vh, 35rem);
+		overflow: hidden;
+		border-radius: 1rem;
+		backdrop-filter: blur(20px) saturate(140%);
+		-webkit-backdrop-filter: blur(20px) saturate(140%);
+		box-shadow: 0 18px 52px rgba(15, 23, 42, 0.2);
 	}
 
 	:global(.dark) .fab-music-panel {
@@ -136,7 +136,9 @@ function setVolume(volume: number) {
 
 	@media (width < 640px) {
 		.fab-music-panel {
-			padding: 0.9rem 0.85rem 0.9rem 0.9rem;
+			width: min(22rem, calc(100vw - 1rem));
+			max-height: calc(100svh - 6.75rem);
+			padding: 0.85rem 0.8rem 0.8rem;
 			border-radius: 1rem;
 		}
 	}

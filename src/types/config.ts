@@ -307,6 +307,7 @@ export interface BlogPostData {
 	description: string;
 	tags: string[];
 	draft?: boolean;
+	hidden?: boolean;
 	image?: string;
 	category?: string;
 	pinned?: boolean;
@@ -364,6 +365,7 @@ export interface MusicPlayerConfig {
 	mode: "meting" | "local"; // 音乐播放器模式
 	meting_api: string; // Meting API 地址
 	id: string; // 歌单ID
+	ids?: string[]; // 多首单曲 ID；设置后优先于 id
 	server: string; // 音乐源服务器
 	type: string; // 音乐类型
 }

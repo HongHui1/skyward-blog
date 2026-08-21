@@ -7,6 +7,7 @@ import { widgetConfigs } from "../config";
 import { initLinkPreloading } from "../utils/navigation-utils";
 import { SWUP_SELECTORS } from "./core/swup-config";
 import { SwupHooksManager } from "./core/swup-hooks";
+import { getMotionSystem } from "./motion-system";
 import { setupSakuraOnDOMReady } from "./effects/sakura-effect";
 import {
 	destroyTransitionEffect,
@@ -119,6 +120,15 @@ export class SwupManager {
 			},
 			checkKatex: () => {
 				checkKatex();
+			},
+			motionTransitionStart: () => {
+				getMotionSystem().transitionStart();
+			},
+			motionContentReplaced: () => {
+				getMotionSystem().contentReplaced();
+			},
+			motionTransitionEnd: () => {
+				getMotionSystem().transitionEnd();
 			},
 		});
 

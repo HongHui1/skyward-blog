@@ -49,7 +49,9 @@ export function generateTOCItems(config: TOCConfig): TOCItem[] {
 		"ト",
 	];
 
-	const headings = document.querySelectorAll("h1, h2, h3, h4, h5, h6");
+	const headings = document.querySelectorAll(
+		"#post-container h1, #post-container h2, #post-container h3, #post-container h4, #post-container h5, #post-container h6",
+	);
 	const items: TOCItem[] = [];
 	let h1Count = 0;
 
@@ -66,6 +68,9 @@ export function generateTOCItems(config: TOCConfig): TOCItem[] {
 		}
 
 		const text = (heading.textContent || "").replace(/#+\s*$/, "");
+		if (!text.trim()) {
+			return;
+		}
 		let badge = "";
 
 		// 只为 H1 标题生成 badge
@@ -115,7 +120,7 @@ export function generatePostItems(): PostItem[] {
  * 检查是否为首页
  */
 export function checkIsHomePage(): boolean {
-	const pathname = window.location.pathname;
+	const pathname = withoutBase(window.location.pathname);
 	return pathname === "/" || pathname === "" || /^\/\d+\/?$/.test(pathname);
 }
 
@@ -163,3 +168,4 @@ export function getTOCConfig(): TOCConfig {
 		depth: window.siteConfig?.toc?.depth ?? 3,
 	};
 }
+import { withoutBase } from "../../../../utils/base-path";

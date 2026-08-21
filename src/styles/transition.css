@@ -82,8 +82,8 @@ html.is-animating .transition-swup-fade {
 
 /* 页面加载动画 */
 .onload-animation {
-  opacity: 0;
-  animation: fade-in-up var(--transition-duration) ease-out forwards;
+  opacity: 1;
+  animation: fade-in-up var(--transition-duration) ease-out both;
 }
 
 .onload-animation-fade-in {
@@ -147,11 +147,14 @@ html.is-animating .transition-swup-fade {
 /* 性能优化 */
 .transition-main,
 .transition-leaving,
-.onload-animation,
 .transition-slide-in,
 .card-animation {
   transform: translateZ(0);
-  will-change: transform;
+}
+
+html.is-changing .transition-main,
+html.is-changing .transition-leaving {
+  will-change: transform, opacity, clip-path;
 }
 
 /* GPU 加速优化 - 用于 wave 等重型动画 */
@@ -163,12 +166,12 @@ html.is-animating .transition-swup-fade {
 }
 
 /* View Transitions API - 主题切换动画 */
-::view-transition-old(root) {
+html.is-theme-transitioning::view-transition-old(root) {
   animation: theme-fade-out 0.25s ease-out forwards;
   z-index: 2;
 }
 
-::view-transition-new(root) {
+html.is-theme-transitioning::view-transition-new(root) {
   animation: theme-fade-in 0.25s ease-in forwards;
   z-index: 1;
 }
@@ -221,9 +224,10 @@ html.is-animating .transition-swup-fade {
   .waves > .parallax use,
   .sakura-canvas,
   .animation-element {
-    animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: 0.01ms !important;
+    animation: none !important;
+    transition: none !important;
+    opacity: 1 !important;
+    transform: none !important;
     will-change: auto !important;
   }
 }

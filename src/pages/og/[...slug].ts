@@ -27,7 +27,9 @@ export const getStaticPaths: GetStaticPaths = async () => {
 	}
 
 	const allPosts = await getCollection("posts");
-	const publishedPosts = allPosts.filter((post) => !post.data.draft);
+	const publishedPosts = allPosts.filter(
+		(post) => !post.data.draft && !post.data.hidden,
+	);
 
 	return publishedPosts.map((post) => {
 		// 将 .png 作为 catch-all 参数的一部分，避免 Astro 对

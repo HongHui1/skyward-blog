@@ -6,18 +6,20 @@ import { devicesData } from "../data/devices";
 import I18nKey from "../i18n/i18nKey";
 import { i18n } from "../i18n/translation";
 import MainGridLayout from "../layouts/MainGridLayout.astro";
+import { url } from "../utils/url-utils";
 
 export const prerender = true;
 
 // 检查设备页面是否启用
 if (!siteConfig.featurePages.devices) {
-	return Astro.redirect("/404/");
+	return Astro.redirect(url("/404/"));
 }
 
 // 设备数据
 const devices = devicesData;
 const brands = Object.keys(devices);
 const viewDetailsText = i18n(I18nKey.devicesViewDetails);
+const devicesScriptUrl = url("/js/devices-page-handler.js");
 ---
 
 <MainGridLayout title={i18n(I18nKey.devices)}>
@@ -93,7 +95,7 @@ const viewDetailsText = i18n(I18nKey.devicesViewDetails);
 	</div>
 
 	<!-- 使用全局脚本，确保 swup 切换后仍能重新初始化 -->
-	<script is:inline src="/js/devices-page-handler.js"></script>
+	<script is:inline src={devicesScriptUrl}></script>
 </MainGridLayout>
 
 <style>

@@ -99,9 +99,12 @@ export const sidebarLayoutConfig: SidebarLayoutConfig = {
 
 	// 侧栏组件布局配置
 	components: {
-		left: ["profile", "announcement", "tags", "card-toc"],
-		right: ["site-stats", "calendar", "categories", "music-sidebar"],
-		drawer: ["profile", "announcement", "music-sidebar", "categories", "tags"],
+		// 桌面和平板使用一列信息侧栏，避免首页正文被双侧栏挤窄。
+		// 音乐与主题功能仍保留：音乐卡位于此侧栏，主题设置位于导航栏。
+		left: ["profile", "site-stats", "categories", "music-sidebar"],
+		right: [],
+		// 手机端直接进入正文；音乐使用全局悬浮播放器，主题设置仍在导航栏。
+		drawer: [],
 	},
 
 	// 默认动画配置

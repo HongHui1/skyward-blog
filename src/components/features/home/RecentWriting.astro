@@ -1,0 +1,503 @@
+---
+import { getCollection } from "astro:content";
+import { Icon } from "astro-icon/components";
+
+import { getDiaryList } from "@/data/diary";
+import { getPostUrl, url } from "@/utils/url-utils";
+
+const publicPosts = await getCollection("posts", ({ data }) => {
+	return data.draft !== true && data.hidden !== true;
+});
+
+const findPost = (slug: string) =>
+	publicPosts.find(
+		(post) => post.id.replace(/\.(md|mdx|markdown)$/i, "") === slug,
+	);
+
+const travelPost = findPost("nanjing-first-stop");
+const studyPost = findPost("learning-foundations");
+const latestDiary = getDiaryList(1)[0];
+
+const formatDate = (value: Date | string) =>
+	new Intl.DateTimeFormat("zh-CN", {
+		year: "numeric",
+		month: "2-digit",
+		day: "2-digit",
+		timeZone: "Asia/Shanghai",
+	}).format(new Date(value));
+
+const formatDateTime = (value: Date | string) =>
+	new Date(value).toISOString().slice(0, 10);
+
+const travelHref = travelPost
+	? getPostUrl(travelPost)
+	: url("/archive/?category=%E9%9A%8F%E9%A3%8E%E8%80%8C%E8%A1%8C");
+const studyHref = studyPost
+	? getPostUrl(studyPost)
+	: url("/archive/?category=%E5%AD%A6%E4%B9%A0%E6%9C%AD%E8%AE%B0");
+const diaryHref = url("/diary/");
+const archiveHref = url("/archive/");
+const travelCover = url("/images/albums/nanjing/cover.jpg");
+---
+
+<section
+	id="sky-journal"
+	class="home-writing card-base onload-animation"
+	aria-labelledby="home-writing-title"
+>
+	<header class="home-writing-header">
+		<div>
+			<h2 id="home-writing-title">最近写下</h2>
+			<p class="home-writing-intro">
+				从生活、学习和旅途中，收集 SkyCity 的第一批坐标。
+			</p>
+		</div>
+		<a class="archive-link" href={archiveHref} aria-label="查看文章归档">
+			<span>查看归档</span>
+			<Icon name="material-symbols:arrow-outward-rounded" />
+		</a>
+	</header>
+
+	<div class="writing-grid">
+		<a
+			class="direction-card direction-card-travel"
+			href={travelHref}
+			data-sky-shared-card
+			data-sky-shared-href={travelHref}
+			aria-label={`阅读：${travelPost?.data.title ?? "南京：随风而行的第一站"}`}
+		>
+			<img
+				class="travel-cover"
+				data-sky-shared-cover
+				src={travelCover}
+				alt="南京旅途中的城市风景"
+				loading="lazy"
+				decoding="async"
+			/>
+			<div class="travel-overlay"></div>
+			<div class="travel-content">
+				<div class="direction-heading direction-heading-light">
+					<span class="direction-icon">
+						<Icon name="material-symbols:flight-takeoff-rounded" />
+					</span>
+					<span>随风而行</span>
+				</div>
+				<div class="direction-copy">
+					<time
+						datetime={formatDateTime(
+							travelPost?.data.published ?? "2026-01-27",
+						)}
+					>
+						{formatDate(travelPost?.data.published ?? "2026-01-27")}
+					</time>
+					<h3 data-sky-shared-title>{travelPost?.data.title ?? "南京：随风而行的第一站"}</h3>
+					<p>
+						{travelPost?.data.description ??
+							"从禄口机场抵达南京，在钟山、玄武湖与秦淮河之间慢慢认识这座城市。"}
+					</p>
+				</div>
+				<span class="card-action card-action-light">
+					走进南京
+					<Icon name="material-symbols:arrow-forward-rounded" />
+				</span>
+			</div>
+		</a>
+
+		<div class="writing-side">
+			<a
+				class="direction-card direction-card-text direction-card-diary"
+				href={diaryHref}
+				data-sky-shared-card
+				data-sky-shared-href={diaryHref}
+				aria-label={`阅读：${latestDiary?.title ?? "夏日、蓝天与《鸟之诗》"}`}
+			>
+				<div class="direction-heading">
+					<span class="direction-icon">
+						<Icon name="material-symbols:edit-note-rounded" />
+					</span>
+					<span>杂谈</span>
+				</div>
+				<div class="direction-copy">
+					<time datetime={latestDiary?.date ?? "2026-08-10"}>
+						{formatDate(latestDiary?.date ?? "2026-08-10")}
+					</time>
+					<h3 data-sky-shared-title>{latestDiary?.title ?? "夏日、蓝天与《鸟之诗》"}</h3>
+					<p>高考结束后的夏天，蓝天、白云与一首歌，留下关于自由的记忆。</p>
+				</div>
+				<span class="card-action">
+					读这一章
+					<Icon name="material-symbols:arrow-forward-rounded" />
+				</span>
+			</a>
+
+			<a
+				class="direction-card direction-card-text direction-card-study"
+				href={studyHref}
+				data-sky-shared-card
+				data-sky-shared-href={studyHref}
+				aria-label={`阅读：${studyPost?.data.title ?? "这是我的地基：从 C 到软件工程的学习回望"}`}
+			>
+				<div class="direction-heading">
+					<span class="direction-icon">
+						<Icon name="material-symbols:school-outline-rounded" />
+					</span>
+					<span>学习札记</span>
+				</div>
+				<div class="direction-copy">
+					<time
+						datetime={formatDateTime(
+							studyPost?.data.published ?? "2026-08-10",
+						)}
+					>
+						{formatDate(studyPost?.data.published ?? "2026-08-10")}
+					</time>
+					<h3 data-sky-shared-title>
+						{studyPost?.data.title ??
+							"这是我的地基：从 C 到软件工程的学习回望"}
+					</h3>
+					<p>
+						{studyPost?.data.description ??
+							"回望一路接触过的编程语言与课程，也为接下来的 408 学习留下一处起点。"}
+					</p>
+				</div>
+				<span class="card-action">
+					继续学习
+					<Icon name="material-symbols:arrow-forward-rounded" />
+				</span>
+			</a>
+		</div>
+	</div>
+</section>
+
+<style>
+	.home-writing {
+		margin-bottom: 1rem;
+		padding: 1.25rem;
+	}
+
+	.home-writing-header {
+		display: flex;
+		align-items: flex-end;
+		justify-content: space-between;
+		gap: 1.5rem;
+		padding: 0.25rem 0.25rem 1.1rem;
+	}
+
+	.home-writing h2 {
+		margin: 0;
+		color: rgb(0 0 0 / 0.9);
+		font-size: clamp(1.6rem, 3vw, 2.15rem);
+		font-weight: 800;
+		line-height: 1.15;
+	}
+
+	.home-writing-intro {
+		margin: 0.45rem 0 0;
+		color: rgb(0 0 0 / 0.5);
+		font-size: 0.92rem;
+	}
+
+	.archive-link {
+		display: inline-flex;
+		flex: none;
+		align-items: center;
+		gap: 0.35rem;
+		padding: 0.5rem 0.7rem;
+		border-radius: 0.75rem;
+		color: rgb(0 0 0 / 0.5);
+		font-size: 0.82rem;
+		font-weight: 700;
+		text-decoration: none;
+	}
+
+	.archive-link:hover {
+		background: var(--btn-plain-bg-hover);
+		color: var(--primary);
+	}
+
+	.archive-link :global(svg) {
+		width: 1.05rem;
+		height: 1.05rem;
+	}
+
+	.writing-grid {
+		display: grid;
+		grid-template-columns: minmax(0, 1.2fr) minmax(17rem, 0.8fr);
+		gap: 0.85rem;
+	}
+
+	.writing-side {
+		display: grid;
+		grid-template-rows: repeat(2, minmax(0, 1fr));
+		gap: 0.85rem;
+	}
+
+	.direction-card {
+		position: relative;
+		display: flex;
+		min-width: 0;
+		border: 1px solid var(--line-divider);
+		border-radius: calc(var(--radius-large) - 0.35rem);
+		overflow: hidden;
+		color: rgb(0 0 0 / 0.9);
+		text-decoration: none;
+		isolation: isolate;
+		transition:
+			transform 220ms ease,
+			border-color 220ms ease,
+			box-shadow 220ms ease;
+	}
+
+	@media (hover: hover) and (pointer: fine) {
+		.direction-card-text:hover {
+			transform: translateY(-1px);
+			border-color: color-mix(in oklch, var(--primary) 42%, var(--line-divider));
+			box-shadow: 0 10px 24px rgb(15 23 42 / 0.09);
+		}
+
+		.direction-card-travel:hover {
+			border-color: color-mix(in oklch, var(--primary) 48%, var(--line-divider));
+			box-shadow: 0 16px 38px rgb(15 23 42 / 0.14);
+		}
+	}
+
+	.direction-card-travel {
+		min-height: 26rem;
+		background: #1f2937;
+		color: white;
+	}
+
+	.travel-cover,
+	.travel-overlay {
+		position: absolute;
+		inset: 0;
+		width: 100%;
+		height: 100%;
+	}
+
+	.travel-cover {
+		z-index: -2;
+		object-fit: cover;
+		transition: transform 600ms cubic-bezier(0.2, 0.7, 0.2, 1);
+	}
+
+	.direction-card-travel:hover .travel-cover {
+		transform: scale(1.035);
+	}
+
+	.travel-overlay {
+		z-index: -1;
+		background:
+			linear-gradient(180deg, rgb(6 14 26 / 0.18) 0%, rgb(6 14 26 / 0.2) 32%, rgb(6 14 26 / 0.88) 100%),
+			linear-gradient(90deg, rgb(6 14 26 / 0.32), transparent 62%);
+	}
+
+	.travel-content,
+	.direction-card-text {
+		padding: 1.15rem;
+	}
+
+	.travel-content {
+		display: flex;
+		width: 100%;
+		flex-direction: column;
+		justify-content: space-between;
+	}
+
+	.direction-card-text {
+		flex-direction: column;
+		justify-content: space-between;
+		background: color-mix(in oklch, var(--primary) 5%, var(--card-bg));
+	}
+
+	.direction-card-diary {
+		background:
+			radial-gradient(circle at 100% 0%, color-mix(in oklch, var(--primary) 17%, transparent), transparent 48%),
+			color-mix(in oklch, var(--primary) 4%, var(--card-bg));
+	}
+
+	.direction-card-study {
+		background:
+			radial-gradient(circle at 0% 100%, color-mix(in oklch, var(--primary) 14%, transparent), transparent 50%),
+			color-mix(in oklch, var(--primary) 2%, var(--card-bg));
+	}
+
+	.direction-heading {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.5rem;
+		color: var(--primary);
+		font-size: 0.82rem;
+		font-weight: 800;
+		letter-spacing: 0.06em;
+	}
+
+	.direction-heading-light {
+		color: white;
+	}
+
+	.direction-icon {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		width: 1.9rem;
+		height: 1.9rem;
+		border-radius: 0.65rem;
+		background: color-mix(in oklch, var(--primary) 12%, transparent);
+	}
+
+	.direction-heading-light .direction-icon {
+		background: rgb(255 255 255 / 0.16);
+		backdrop-filter: blur(8px);
+	}
+
+	.direction-icon :global(svg) {
+		width: 1.1rem;
+		height: 1.1rem;
+	}
+
+	.direction-copy time {
+		display: block;
+		margin-bottom: 0.45rem;
+		color: rgb(0 0 0 / 0.5);
+		font-size: 0.72rem;
+		font-weight: 700;
+		letter-spacing: 0.04em;
+	}
+
+	.direction-card-travel .direction-copy time {
+		color: rgb(255 255 255 / 0.72);
+	}
+
+	.direction-copy h3 {
+		margin: 0;
+		font-size: clamp(1.08rem, 2vw, 1.35rem);
+		font-weight: 800;
+		line-height: 1.35;
+	}
+
+	.direction-card-travel .direction-copy h3 {
+		max-width: 17em;
+		font-size: clamp(1.55rem, 3vw, 2.3rem);
+		line-height: 1.2;
+		text-shadow: 0 2px 18px rgb(0 0 0 / 0.28);
+	}
+
+	.direction-copy p {
+		display: -webkit-box;
+		margin: 0.55rem 0 0;
+		overflow: hidden;
+		color: rgb(0 0 0 / 0.5);
+		font-size: 0.84rem;
+		line-height: 1.65;
+		-webkit-box-orient: vertical;
+		-webkit-line-clamp: 2;
+	}
+
+	.direction-card-travel .direction-copy p {
+		max-width: 38rem;
+		color: rgb(255 255 255 / 0.78);
+		font-size: 0.9rem;
+		-webkit-line-clamp: 3;
+	}
+
+	.card-action {
+		display: inline-flex;
+		align-items: center;
+		align-self: flex-start;
+		gap: 0.35rem;
+		margin-top: 0.9rem;
+		color: var(--primary);
+		font-size: 0.78rem;
+		font-weight: 800;
+	}
+
+	.card-action-light {
+		color: white;
+	}
+
+	.card-action :global(svg) {
+		width: 1rem;
+		height: 1rem;
+		transition: transform 180ms ease;
+	}
+
+	.direction-card:hover .card-action :global(svg) {
+		transform: translateX(0.2rem);
+	}
+
+	@media (width < 1100px) {
+		.writing-grid {
+			grid-template-columns: 1fr;
+		}
+
+		.direction-card-travel {
+			min-height: 20rem;
+		}
+
+		.writing-side {
+			grid-template-columns: repeat(2, minmax(0, 1fr));
+			grid-template-rows: none;
+		}
+	}
+
+	@media (width < 768px) {
+		.home-writing {
+			padding: 0.8rem;
+		}
+
+		.home-writing-header {
+			align-items: flex-start;
+			padding: 0.3rem 0.2rem 0.9rem;
+		}
+
+		.home-writing-intro {
+			font-size: 0.83rem;
+		}
+
+		.archive-link {
+			padding: 0.4rem;
+		}
+
+		.archive-link span {
+			display: none;
+		}
+
+		.direction-card-travel {
+			min-height: 17.5rem;
+		}
+
+		.writing-side {
+			grid-template-columns: 1fr;
+		}
+
+		.travel-content,
+		.direction-card-text {
+			padding: 1rem;
+		}
+
+		.direction-card-text {
+			min-height: 13.5rem;
+		}
+	}
+
+	:global(:root.dark) .home-writing h2,
+	:global(:root.dark) .direction-card-text {
+		color: rgb(255 255 255 / 0.9);
+	}
+
+	:global(:root.dark) .home-writing-intro,
+	:global(:root.dark) .archive-link,
+	:global(:root.dark) .direction-card-text .direction-copy time,
+	:global(:root.dark) .direction-card-text .direction-copy p {
+		color: rgb(255 255 255 / 0.5);
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		.direction-card,
+		.travel-cover,
+		.card-action :global(svg) {
+			transition: none;
+		}
+	}
+</style>

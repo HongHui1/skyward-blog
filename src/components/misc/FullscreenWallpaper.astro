@@ -1,6 +1,8 @@
 ---
+import DynamicWallpaperStage from "@components/control/DynamicWallpaperStage.astro";
 import { siteConfig } from "../../config";
 import type { FullscreenWallpaperConfig } from "../../types/config";
+import { withBase } from "../../utils/base-path";
 
 interface Props {
 	config: FullscreenWallpaperConfig;
@@ -27,8 +29,10 @@ const getImageSources = async () => {
 		}
 	}
 
-	const toArray = (src: string | string[] | undefined): string[] =>
-		Array.isArray(src) ? src : typeof src === "string" ? [src] : [];
+	const toArray = (src: string | string[] | undefined): string[] => {
+		const values = Array.isArray(src) ? src : typeof src === "string" ? [src] : [];
+		return values.map(withBase);
+	};
 
 	if (
 		typeof srcConfig === "object" &&
@@ -152,6 +156,7 @@ const renderGroups = [
 	) : (
 		<div id="wallpaper-single-container" class="w-full h-full relative"></div>
 	)}
+	<DynamicWallpaperStage location="fullscreen" />
 </div>
 
 <script is:inline define:vars={{ desktopImages: imageSources.desktop, mobileImages: imageSources.mobile, positionClass }}>

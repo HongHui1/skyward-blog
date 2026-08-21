@@ -4,6 +4,8 @@
  * 包含壁纸模式管理、布局切换和 Swup 集成逻辑
  */
 
+import { url } from "../../utils/url-utils";
+
 interface Props {
 	navbarTransparentMode?: string;
 	defaultWallpaperMode?: string;
@@ -29,6 +31,7 @@ const {
 	wallpaperEnabled = true,
 	postListLayoutEnabled = true,
 } = Astro.props;
+const homePath = url("/");
 ---
 
 <script
@@ -45,6 +48,7 @@ const {
 		bannerTitleEnabled,
 		wallpaperEnabled,
 		postListLayoutEnabled,
+		homePath,
 	}}
 >
 	function getCarrierNumber(key, fallback) {
@@ -70,8 +74,9 @@ const {
 		}
 
 		const isMobile = window.innerWidth < 1280;
-		const isHomePage =
-			window.location.pathname === "/" || window.location.pathname === "";
+		const normalizedPath = window.location.pathname.replace(/\/+$/, "") || "/";
+		const normalizedHome = homePath.replace(/\/+$/, "") || "/";
+		const isHomePage = normalizedPath === normalizedHome;
 
 		mainContent.classList.remove("mobile-main-no-banner", "no-banner-layout");
 		mainContent.style.removeProperty("min-height");
@@ -102,6 +107,12 @@ const {
 		mainContent.style.setProperty("margin-top", "0", "important");
 
 		if (mode === "banner") {
+			if (isHomePage) {
+				bannerWrapper?.classList.remove("mobile-hide-banner");
+				mainContent.style.setProperty("top", "100svh", "important");
+				return;
+			}
+
 			if (isMobile && !isHomePage) {
 				mainContent.classList.add("mobile-main-no-banner");
 				mainContent.style.setProperty("top", "5.5rem", "important");

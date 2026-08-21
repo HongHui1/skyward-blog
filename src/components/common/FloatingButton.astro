@@ -5,11 +5,21 @@ interface Props {
 	id: string;
 	icon: string;
 	ariaLabel?: string;
+	ariaControls?: string;
+	ariaExpanded?: boolean;
 	onclick?: string;
 	class?: string;
 }
 
-const { id, icon, ariaLabel, onclick, class: className = "" } = Astro.props;
+const {
+	id,
+	icon,
+	ariaLabel,
+	ariaControls,
+	ariaExpanded,
+	onclick,
+	class: className = "",
+} = Astro.props;
 ---
 
 <div
@@ -21,7 +31,13 @@ const { id, icon, ariaLabel, onclick, class: className = "" } = Astro.props;
 	]}
 	onclick={onclick}
 >
-	<button aria-label={ariaLabel} class="h-full w-full rounded-2xl">
+	<button
+		type="button"
+		aria-label={ariaLabel}
+		aria-controls={ariaControls}
+		aria-expanded={ariaExpanded}
+		class="h-full w-full rounded-2xl"
+	>
 		<Icon name={icon} class="mx-auto" />
 	</button>
 </div>

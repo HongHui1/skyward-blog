@@ -9,12 +9,14 @@ import { siteConfig } from "../config";
 import { skillsData } from "../data/skills";
 import I18nKey from "../i18n/i18nKey";
 import { i18n } from "../i18n/translation";
+import { url } from "../utils/url-utils";
 
 if (!siteConfig.featurePages.skills) {
-	return Astro.redirect("/404/");
+	return Astro.redirect(url("/404/"));
 }
 
 const categories = [...new Set(skillsData.map((skill) => skill.category))];
+const filterScriptUrl = url("/js/filter-tabs-handler.js");
 
 const getCategoryText = (category: string) => {
 	switch (category) {
@@ -28,6 +30,10 @@ const getCategoryText = (category: string) => {
 			return i18n(I18nKey.skillsTools);
 		case "other":
 			return i18n(I18nKey.skillsOther);
+		case "language":
+			return i18n(I18nKey.skillsLanguage);
+		case "study":
+			return i18n(I18nKey.skillsStudy);
 		default:
 			return category;
 	}
@@ -45,6 +51,10 @@ const getCategoryIcon = (category: string) => {
 			return "material-symbols:build";
 		case "other":
 			return "material-symbols:widgets";
+		case "language":
+			return "material-symbols:code";
+		case "study":
+			return "material-symbols:menu-book";
 		default:
 			return "material-symbols:category";
 	}
@@ -79,7 +89,7 @@ const subtitle = i18n(I18nKey.skillsSubtitle);
 		});
 	</script>
 
-	<script is:inline src="/js/filter-tabs-handler.js"></script>
+	<script is:inline src={filterScriptUrl}></script>
 
 	<div
 		class="flex w-full rounded-(--radius-large) overflow-hidden relative min-h-32"

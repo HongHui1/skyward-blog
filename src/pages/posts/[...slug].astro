@@ -19,7 +19,11 @@ import MainGridLayout from "@layouts/MainGridLayout.astro";
 import { getRelatedPosts, getSortedPosts } from "@utils/content-utils";
 import { hasCustomPermalink, initPostIdMap } from "@utils/permalink-utils";
 import { getPostPublicDescription } from "@utils/post-card-content";
-import { getFileDirFromPath, removeFileExtension } from "@utils/url-utils";
+import {
+	getFileDirFromPath,
+	removeFileExtension,
+	url,
+} from "@utils/url-utils";
 import {
 	licenseConfig,
 	permalinkConfig,
@@ -151,7 +155,8 @@ if (entry.data.image) {
 			posterCoverUrl = entry.data.image;
 		}
 	} else {
-		ogCoverUrl = entry.data.image; // absolute path like "/images/foo.png"
+		ogCoverUrl = url(entry.data.image);
+		posterCoverUrl = url(entry.data.image);
 	}
 }
 
@@ -258,8 +263,9 @@ const jsonLd = {
 
 			<!-- title -->
 			<div class="relative onload-animation">
-				<div
+				<h1
 					data-pagefind-body
+					data-sky-post-title
 					data-pagefind-weight="10"
 					data-pagefind-meta="title"
 					class="transition w-full block font-bold mb-3
@@ -269,7 +275,7 @@ const jsonLd = {
                     before:absolute before:top-3 before:-left-4.5"
 				>
 					{entry.data.title}
-				</div>
+				</h1>
 			</div>
 
 			<!-- metadata -->

@@ -1,3 +1,5 @@
+import { withBase } from "../../../../utils/base-path";
+
 const INTERACTION_EVENTS = ["click", "keydown", "touchstart"];
 
 const isBrowser = typeof document !== "undefined";
@@ -28,11 +30,5 @@ export function formatTime(seconds: number): string {
 }
 
 export function getAssetPath(path: string): string {
-	if (path.startsWith("http://") || path.startsWith("https://")) {
-		return path;
-	}
-	if (path.startsWith("/")) {
-		return path;
-	}
-	return `/${path}`;
+	return withBase(path);
 }

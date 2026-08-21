@@ -1,0 +1,255 @@
+---
+import { Icon } from "astro-icon/components";
+
+const atlasStops = [
+	{
+		id: "sky",
+		href: "#banner-wrapper",
+		label: "天空",
+		detail: "Sky",
+		icon: "material-symbols:flight-rounded",
+	},
+	{
+		id: "journal",
+		href: "#sky-journal",
+		label: "最近写下",
+		detail: "Journal",
+		icon: "material-symbols:ink-pen-outline-rounded",
+	},
+	{
+		id: "archive",
+		href: "#sky-archive",
+		label: "文章坐标",
+		detail: "Archive",
+		icon: "material-symbols:map-outline-rounded",
+	},
+];
+---
+
+<aside class="sky-atlas" data-sky-atlas aria-label="首页航行轨迹">
+	<div class="sky-atlas__identity" aria-hidden="true">
+		<span>SKYCITY</span>
+		<span class="sky-atlas__signal"></span>
+	</div>
+
+	<nav class="sky-atlas__nav" aria-label="跳转至首页章节">
+		<span class="sky-atlas__track" aria-hidden="true">
+			<span class="sky-atlas__track-fill"></span>
+		</span>
+		{
+			atlasStops.map((stop, index) => (
+				<a
+					class="sky-atlas__stop"
+					href={stop.href}
+					data-sky-atlas-link={stop.id}
+					data-sky-atlas-index={index}
+					aria-label={`前往${stop.label}`}
+				>
+					<span class="sky-atlas__node" aria-hidden="true">
+						<Icon name={stop.icon} />
+					</span>
+					<span class="sky-atlas__copy">
+						<strong>{stop.label}</strong>
+						<small>{stop.detail}</small>
+					</span>
+				</a>
+			))
+		}
+	</nav>
+
+	<div class="sky-atlas__footer" aria-hidden="true">
+		<span>SCROLL</span>
+		<output data-sky-atlas-percent>000</output>
+	</div>
+</aside>
+
+<style>
+	.sky-atlas {
+		--atlas-clip-right: 7.2rem;
+		position: fixed;
+		top: 50%;
+		left: 1rem;
+		z-index: 55;
+		display: none;
+		width: 10.5rem;
+		padding: 0.75rem 0.42rem 0.65rem;
+		overflow: hidden;
+		border-radius: 0.9rem;
+		background: color-mix(in oklch, var(--card-bg) 76%, transparent);
+		box-shadow: 0 16px 42px rgb(10 20 38 / 0.18);
+		backdrop-filter: blur(18px) saturate(135%);
+		-webkit-backdrop-filter: blur(18px) saturate(135%);
+		clip-path: inset(0 var(--atlas-clip-right) 0 0 round 0.9rem);
+		transform: translateY(-50%);
+		transition: clip-path 420ms cubic-bezier(0.16, 1, 0.3, 1);
+	}
+
+	.sky-atlas:is(:hover, :focus-within) {
+		--atlas-clip-right: 0rem;
+	}
+
+	.sky-atlas__identity,
+	.sky-atlas__footer {
+		display: flex;
+		width: 9.5rem;
+		align-items: center;
+		gap: 0.55rem;
+		padding-inline: 0.38rem;
+		color: var(--content-meta);
+		font-size: 0.58rem;
+		font-weight: 750;
+		letter-spacing: 0.13em;
+		white-space: nowrap;
+	}
+
+	.sky-atlas__identity {
+		margin-bottom: 0.55rem;
+	}
+
+	.sky-atlas__signal {
+		width: 0.32rem;
+		height: 0.32rem;
+		border-radius: 50%;
+		background: var(--primary);
+		box-shadow: 0 0 0 0.24rem color-mix(in oklch, var(--primary) 16%, transparent);
+		animation: sky-atlas-signal 2.8s ease-in-out infinite;
+	}
+
+	.sky-atlas__nav {
+		position: relative;
+		display: grid;
+		gap: 0.18rem;
+	}
+
+	.sky-atlas__track {
+		position: absolute;
+		top: 1.45rem;
+		bottom: 1.45rem;
+		left: 1.2rem;
+		width: 1px;
+		overflow: hidden;
+		background: color-mix(in oklch, var(--content-meta) 25%, transparent);
+	}
+
+	.sky-atlas__track-fill {
+		display: block;
+		width: 100%;
+		height: 100%;
+		background: var(--primary);
+		box-shadow: 0 5px 14px color-mix(in oklch, var(--primary) 45%, transparent);
+		transform: scaleY(var(--sky-atlas-progress, 0));
+		transform-origin: top;
+		transition: transform 120ms linear;
+	}
+
+	.sky-atlas__stop {
+		--sky-atlas-x: 0px;
+		--sky-atlas-y: 0px;
+		position: relative;
+		display: grid;
+		width: 9.5rem;
+		min-height: 2.75rem;
+		grid-template-columns: 2.4rem 1fr;
+		align-items: center;
+		gap: 0.55rem;
+		border-radius: 0.72rem;
+		color: var(--content-meta);
+		text-decoration: none;
+		transform: translate3d(var(--sky-atlas-x), var(--sky-atlas-y), 0);
+		transition:
+			color 180ms ease,
+			background-color 180ms ease,
+			transform 260ms cubic-bezier(0.16, 1, 0.3, 1);
+	}
+
+	.sky-atlas__stop:is(:hover, :focus-visible),
+	.sky-atlas__stop[aria-current="location"] {
+		background: color-mix(in oklch, var(--primary) 11%, transparent);
+		color: var(--primary);
+	}
+
+	.sky-atlas__stop:focus-visible {
+		outline: 2px solid var(--primary);
+		outline-offset: 2px;
+	}
+
+	.sky-atlas__node {
+		position: relative;
+		z-index: 1;
+		display: grid;
+		width: 2.4rem;
+		height: 2.4rem;
+		place-items: center;
+		border-radius: 0.65rem;
+		background: color-mix(in oklch, var(--card-bg) 82%, transparent);
+	}
+
+	.sky-atlas__node :global(svg) {
+		width: 1.08rem;
+		height: 1.08rem;
+	}
+
+	.sky-atlas__copy {
+		display: grid;
+		min-width: 0;
+		opacity: 0;
+		transform: translateX(-0.4rem);
+		transition:
+			opacity 180ms ease,
+			transform 320ms cubic-bezier(0.16, 1, 0.3, 1);
+	}
+
+	.sky-atlas:is(:hover, :focus-within) .sky-atlas__copy {
+		opacity: 1;
+		transform: translateX(0);
+	}
+
+	.sky-atlas__copy strong {
+		font-size: 0.75rem;
+		font-weight: 760;
+		line-height: 1.2;
+	}
+
+	.sky-atlas__copy small {
+		margin-top: 0.14rem;
+		font-size: 0.56rem;
+		letter-spacing: 0.08em;
+		text-transform: uppercase;
+	}
+
+	.sky-atlas__footer {
+		justify-content: space-between;
+		margin-top: 0.55rem;
+		font-variant-numeric: tabular-nums;
+	}
+
+	.sky-atlas__footer output::after {
+		content: "%";
+	}
+
+	@keyframes sky-atlas-signal {
+		50% {
+			opacity: 0.58;
+			transform: scale(0.8);
+		}
+	}
+
+	@media (width >= 1400px) and (hover: hover) and (pointer: fine) {
+		:global(html[data-sky-page="home"]) .sky-atlas {
+			display: block;
+		}
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		.sky-atlas,
+		.sky-atlas__stop,
+		.sky-atlas__copy,
+		.sky-atlas__track-fill {
+			transition: none;
+		}
+
+		.sky-atlas__signal {
+			animation: none;
+		}
+	}
+</style>

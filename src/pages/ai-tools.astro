@@ -9,12 +9,14 @@ import { aiToolsData } from "../data/ai-tools";
 import I18nKey from "../i18n/i18nKey";
 import { i18n } from "../i18n/translation";
 import MainGridLayout from "../layouts/MainGridLayout.astro";
+import { url } from "../utils/url-utils";
 
 if (!siteConfig.featurePages.aiTools) {
-	return Astro.redirect("/404/");
+	return Astro.redirect(url("/404/"));
 }
 
 const categories = [...new Set(aiToolsData.map((tool) => tool.category))];
+const filterScriptUrl = url("/js/filter-tabs-handler.js");
 
 const getCategoryText = (category: string) => {
 	switch (category) {
@@ -46,15 +48,15 @@ const getCategoryIcon = (category: string) => {
 		case "coding":
 			return "material-symbols:code";
 		case "image":
-			return "material-symbols:image-outline";
+			return "material-symbols:photo-library-outline";
 		case "audio":
 			return "material-symbols:graphic-eq";
 		case "video":
 			return "material-symbols:movie-outline";
 		case "writing":
-			return "material-symbols:edit-note";
+			return "material-symbols:conversion-path";
 		case "search":
-			return "material-symbols:search";
+			return "material-symbols:folder-managed-outline";
 		case "other":
 			return "material-symbols:widgets-outline";
 		default:
@@ -91,7 +93,7 @@ const subtitle = i18n(I18nKey.aiToolsSubtitle);
 		});
 	</script>
 
-	<script is:inline src="/js/filter-tabs-handler.js"></script>
+	<script is:inline src={filterScriptUrl}></script>
 
 	<div
 		class="flex w-full rounded-[var(--radius-large)] overflow-hidden relative min-h-32"
@@ -99,9 +101,14 @@ const subtitle = i18n(I18nKey.aiToolsSubtitle);
 		<div class="card-base z-10 px-6 sm:px-9 py-6 relative w-full">
 			<PageHeader title={title} subtitle={subtitle} />
 
-			<div class="mb-8">
+			<div class="mb-4">
 				<FilterTabs tabs={filterTabs} dataAttr="category" />
 			</div>
+
+			<p class="tool-discovery-hint">
+				<Icon name="material-symbols:ads-click-rounded" aria-hidden="true" />
+				<span>{i18n(I18nKey.aiToolsHoverHint)}</span>
+			</p>
 
 			<div id="ai-tools-grid" class="grid gap-6 items-start">
 				{aiToolsData.map((tool) => <AIToolCard tool={tool} />)}
@@ -125,6 +132,21 @@ const subtitle = i18n(I18nKey.aiToolsSubtitle);
 		grid-template-columns: 1fr;
 	}
 
+	.tool-discovery-hint {
+		display: flex;
+		align-items: center;
+		gap: 0.45rem;
+		margin: 0 0 1.5rem;
+		color: color-mix(in oklch, var(--content) 58%, transparent);
+		font-size: 0.78rem;
+	}
+
+	.tool-discovery-hint iconify-icon {
+		width: 1rem;
+		height: 1rem;
+		color: var(--primary);
+	}
+
 	@media (min-width: 640px) {
 		#ai-tools-grid {
 			grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -136,6 +158,10 @@ const subtitle = i18n(I18nKey.aiToolsSubtitle);
 	}
 
 	@media (max-width: 639px) {
+		.tool-discovery-hint {
+			display: none;
+		}
+
 		#main-grid[data-layout-mode="grid"] #ai-tools-grid {
 			grid-template-columns: 1fr;
 		}

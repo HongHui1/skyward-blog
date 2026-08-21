@@ -22,6 +22,9 @@ export interface SwupHookHandlers {
 	cleanupFancybox?: () => void;
 	initCustomScrollbar?: () => void;
 	checkKatex?: () => void;
+	motionTransitionStart?: () => void;
+	motionContentReplaced?: () => void;
+	motionTransitionEnd?: () => void;
 }
 
 // 访问对象类型
@@ -38,6 +41,7 @@ interface VisitObject {
 export class SwupHooksManager {
 	private bannerEnabled: boolean;
 	private handlers: SwupHookHandlers;
+	private mobileBannerTimers: number[] = [];
 
 	private cachedElements: Map<string, Element | null> = new Map();
 
@@ -63,6 +67,30 @@ export class SwupHooksManager {
 
 	private clearCache(): void {
 		this.cachedElements.clear();
+	}
+
+	private isHomeUrl(value: string): boolean {
+		try {
+			return pathsEqual(new URL(value, window.location.href).pathname, url("/"));
+		} catch {
+			return pathsEqual(value, url("/"));
+		}
+	}
+
+	private getCurrentPageIsHome(): boolean {
+		const pageData = document.getElementById("page-overlay-data");
+		const pageDataValue = pageData?.dataset.isHome;
+		if (pageDataValue === "true" || pageDataValue === "false") {
+			return pageDataValue === "true";
+		}
+		return this.isHomeUrl(window.location.href);
+	}
+
+	private syncPersistentPageShell(isHomePage: boolean): void {
+		this.handleNavbarState(isHomePage);
+		this.handleBannerTextVisibility(isHomePage);
+		this.handleMobileBannerVisibility(isHomePage);
+		this.syncMainContentPosition(isHomePage);
 	}
 
 	/**
@@ -102,7 +130,7 @@ export class SwupHooksManager {
 			"scroll:top",
 			(visit: VisitObject, args: { options?: ScrollIntoViewOptions }) => {
 				const isFullscreen = this.getCurrentWallpaperMode() === "fullscreen";
-				const isHomePage = pathsEqual(visit.to.url, url("/"));
+				const isHomePage = this.isHomeUrl(visit.to.url);
 				if (isFullscreen && !isHomePage) {
 					const mainGrid = this.getCachedElement("#main-grid") as HTMLElement | null;
 					if (mainGrid) {
@@ -166,9 +194,7 @@ export class SwupHooksManager {
 	private registerContentReplaceHook(): void {
 		window.swup!.hooks.on("content:replace", () => {
 			this.clearCache();
-			this.syncMainContentPosition(
-				pathsEqual(window.location.pathname, url("/")),
-			);
+			this.syncPersistentPageShell(this.getCurrentPageIsHome());
 			this.ensureNavbarVisibleForFullscreen();
 			this.updatePageOverlay();
 
@@ -182,6 +208,7 @@ export class SwupHooksManager {
 
 			// 重新初始化 semifull 模式滚动检测
 			this.reinitSemifullScrollDetection();
+			this.handlers.motionContentReplaced?.();
 		});
 	}
 
@@ -196,12 +223,9 @@ export class SwupHooksManager {
 			this.handlers.cleanupFancybox?.();
 
 			// 处理页面状态
-			const isHomePage = pathsEqual(visit.to.url, url("/"));
+			const isHomePage = this.isHomeUrl(visit.to.url);
 			this.handleBodyClass(isHomePage);
-			this.handleBannerTextVisibility(isHomePage);
-			this.handleNavbarState(isHomePage);
-			this.handleMobileBannerVisibility(isHomePage);
-			this.syncMainContentPosition(isHomePage);
+			this.syncPersistentPageShell(isHomePage);
 			this.ensureNavbarVisibleForFullscreen();
 
 			// 扩展页面高度防止滚动动画跳跃
@@ -209,6 +233,7 @@ export class SwupHooksManager {
 
 			// 隐藏 TOC
 			this.hideTOC();
+			this.handlers.motionTransitionStart?.();
 		}) as (...args: unknown[]) => void);
 	}
 
@@ -218,9 +243,8 @@ export class SwupHooksManager {
 	 */
 	private registerPageViewHook(): void {
 		window.swup!.hooks.on("page:view", () => {
-			this.syncMainContentPosition(
-				pathsEqual(window.location.pathname, url("/")),
-			);
+			this.clearCache();
+			this.syncPersistentPageShell(this.getCurrentPageIsHome());
 			this.ensureNavbarVisibleForFullscreen();
 			this.updatePageOverlay();
 
@@ -241,6 +265,7 @@ export class SwupHooksManager {
 	 */
 	private registerVisitEndHook(): void {
 		window.swup!.hooks.on("visit:end", (() => {
+			this.handlers.motionTransitionEnd?.();
 			setTimeout(() => {
 				// 隐藏高度扩展元素
 				this.extendPageHeight(true);
@@ -366,6 +391,11 @@ export class SwupHooksManager {
 	 * 处理移动端 Banner 可见性
 	 */
 	private handleMobileBannerVisibility(isHomePage: boolean): void {
+		for (const timer of this.mobileBannerTimers) {
+			window.clearTimeout(timer);
+		}
+		this.mobileBannerTimers = [];
+
 		const mode = this.getCurrentWallpaperMode();
 		if (mode !== "banner" && mode !== "fullscreen") {
 			return;
@@ -381,20 +411,20 @@ export class SwupHooksManager {
 		if (bannerWrapper && mainContentWrapper) {
 			if (isHomePage) {
 				// 首页：延迟移除隐藏类
-				setTimeout(() => {
+				this.mobileBannerTimers.push(window.setTimeout(() => {
 					bannerWrapper.classList.remove("mobile-hide-banner");
-				}, ANIMATION_CONFIG.mobileBannerDelay);
-				setTimeout(() => {
+				}, ANIMATION_CONFIG.mobileBannerDelay));
+				this.mobileBannerTimers.push(window.setTimeout(() => {
 					mainContentWrapper.classList.remove(
 						"mobile-main-no-banner",
 					);
-				}, ANIMATION_CONFIG.mobileContentDelay);
+				}, ANIMATION_CONFIG.mobileContentDelay));
 			} else {
 				// 非首页：分阶段隐藏
 				bannerWrapper.classList.add("mobile-hide-banner");
-				setTimeout(() => {
+				this.mobileBannerTimers.push(window.setTimeout(() => {
 					mainContentWrapper.classList.add("mobile-main-no-banner");
-				}, ANIMATION_CONFIG.mobileBannerDelay);
+				}, ANIMATION_CONFIG.mobileBannerDelay));
 			}
 		}
 	}
@@ -465,6 +495,16 @@ export class SwupHooksManager {
 		mainContentWrapper.style.setProperty("margin-top", "0", "important");
 
 		if (mode === "banner") {
+			if (isHomePage) {
+				bannerWrapper?.classList.remove("mobile-hide-banner");
+				mainContentWrapper.style.setProperty(
+					"top",
+					"100svh",
+					"important",
+				);
+				return;
+			}
+
 			if (isMobile && !isHomePage) {
 				bannerWrapper?.classList.add("mobile-hide-banner");
 				mainContentWrapper.classList.add("mobile-main-no-banner");

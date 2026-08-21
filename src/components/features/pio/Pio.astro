@@ -1,5 +1,6 @@
 ---
 import type { PioConfig } from "@/types/config";
+import { withBase } from "@/utils/base-path";
 
 interface Props {
 	config: PioConfig;
@@ -8,9 +9,12 @@ interface Props {
 const { config } = Astro.props;
 
 const modelPaths = config.models ?? ["/pio/models/NOIR/noir.model3.json"];
-const modelConfigs = modelPaths.map((p) => ({ path: p }));
+const modelConfigs = modelPaths.map((p) => ({ path: withBase(p) }));
+const frameSrc = withBase("/pio/live2d-host.html");
+const homeUrl = withBase("/");
 
 const position = config.position === "right" ? "bottom-right" : "bottom-left";
+const disableTips = config.dialog?.welcome === "";
 
 const tipsData: Record<string, unknown> = {};
 if (config.tips) {
@@ -47,7 +51,11 @@ if (config.menus?.items && config.menus.items.length > 0) {
 	};
 }
 
-if (Object.keys(tipsData).length > 0) {
+if (disableTips) {
+	if (!Array.isArray(widgetConfig.model)) {
+		(widgetConfig.model as Record<string, unknown>).tips = false;
+	}
+} else if (Object.keys(tipsData).length > 0) {
 	if (!Array.isArray(widgetConfig.model)) {
 		(widgetConfig.model as Record<string, unknown>).tips = tipsData;
 	}
@@ -60,7 +68,8 @@ const isRight = config.position === "right";
 
 <iframe
 	id="l2d-iframe"
-	src="/pio/live2d-host.html"
+	title="SkyCity Live2D 看板娘"
+	src={frameSrc}
 	allowtransparency="true"
 	style={"position: fixed; z-index: 999; pointer-events: none; border: none; bottom: 0;"
 		+ (isRight ? " right: 0;" : " left: 0;")
@@ -68,9 +77,33 @@ const isRight = config.position === "right";
 		+ " height: 600px;"
 		+ " opacity: 0;"}
 	data-config={JSON.stringify(widgetConfig)}
+	data-home-url={homeUrl}
 	data-hidden-on-mobile={hiddenOnMobile ? "true" : "false"}
 	data-width={widgetWidth}
 ></iframe>
+
+<style>
+	#l2d-iframe {
+		--pio-shelter-x: -34%;
+		transform-origin: bottom center;
+		transition:
+			opacity 180ms ease-out,
+			transform 220ms cubic-bezier(0.65, 0, 0.35, 1);
+		will-change: transform, opacity;
+	}
+
+	#l2d-iframe[data-sheltered="true"] {
+		opacity: 0.18 !important;
+		pointer-events: none !important;
+		transform: translate3d(var(--pio-shelter-x), 18%, 0) scale(0.88);
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		#l2d-iframe {
+			transition: none;
+		}
+	}
+</style>
 
 <script>
 	type PioController = {
@@ -101,11 +134,12 @@ const isRight = config.position === "right";
 
 	if (el && configSource) {
 		const config = JSON.parse(configSource.dataset.config || "{}");
+		const homeUrl = configSource.dataset.homeUrl || "/";
 		const hiddenOnMobile = configSource.dataset.hiddenOnMobile === "true";
 
 		if (!win.__mizukiPioController) {
 			const menuActions: Record<string, () => void> = {
-				home: () => (window.location.href = "/"),
+				home: () => (window.location.href = homeUrl),
 				scrollToTop: () => window.scrollTo({ top: 0, behavior: "smooth" }),
 			};
 
@@ -117,6 +151,8 @@ const isRight = config.position === "right";
 			let currentConfigKey = "";
 			let pendingInit: number | undefined;
 			let swupHooksRegistered = false;
+			let musicExpanded = false;
+			let shelterFrame = 0;
 
 			function applyVisibility() {
 				if (!currentEl) return;
@@ -127,6 +163,30 @@ const isRight = config.position === "right";
 					currentEl.style.display = "none";
 				} else {
 					currentEl.style.display = "";
+				}
+			}
+
+			function isFocusedReading() {
+				const post = document.getElementById("post-container");
+				if (!post || window.scrollY < 180) return false;
+				const rect = post.getBoundingClientRect();
+				return rect.top < 96 && rect.bottom > window.innerHeight * 0.48;
+			}
+
+			function applyShelterState() {
+				shelterFrame = 0;
+				if (!currentEl) return;
+				const tocOpen = Boolean(document.querySelector(".floating-toc-panel.show"));
+				const sceneOpen = document.documentElement.classList.contains(
+					"sky-scene-panel-open",
+				);
+				const sheltered = musicExpanded || tocOpen || sceneOpen || isFocusedReading();
+				currentEl.dataset.sheltered = String(sheltered);
+			}
+
+			function scheduleShelterState() {
+				if (!shelterFrame) {
+					shelterFrame = window.requestAnimationFrame(applyShelterState);
 				}
 			}
 
@@ -195,7 +255,21 @@ const isRight = config.position === "right";
 			window.addEventListener("message", handleMessage);
 			window.addEventListener("resize", () => {
 				applyVisibility();
+				scheduleShelterState();
 				scheduleInit();
+			});
+			window.addEventListener("scroll", scheduleShelterState, { passive: true });
+			window.addEventListener("music-sidebar:state", (event) => {
+				const stateEvent = event as CustomEvent<{ isExpanded?: boolean }>;
+				musicExpanded = Boolean(stateEvent.detail?.isExpanded);
+				scheduleShelterState();
+			});
+			document.addEventListener("sky-toc:state", scheduleShelterState);
+			document.addEventListener("swup:page:view", scheduleShelterState);
+			const rootObserver = new MutationObserver(scheduleShelterState);
+			rootObserver.observe(document.documentElement, {
+				attributes: true,
+				attributeFilter: ["class"],
 			});
 
 			if (window.swup) {
@@ -213,6 +287,11 @@ const isRight = config.position === "right";
 					currentEl = nextEl;
 					currentConfig = nextConfig;
 					currentHiddenOnMobile = nextHiddenOnMobile;
+					const pioPosition = String(nextConfig.position || "");
+					nextEl.style.setProperty(
+						"--pio-shelter-x",
+						pioPosition.includes("right") ? "34%" : "-34%",
+					);
 					if (isNewFrame || currentConfigKey !== nextConfigKey) {
 						initSent = false;
 						currentConfigKey = nextConfigKey;
@@ -224,6 +303,7 @@ const isRight = config.position === "right";
 						});
 					}
 					applyVisibility();
+					applyShelterState();
 					if (nextEl.contentDocument?.readyState === "complete") {
 						scheduleInit();
 					}

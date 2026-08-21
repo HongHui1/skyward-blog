@@ -1,22 +1,33 @@
 ---
 import type { PhotoCardProps } from "./types";
+import { withBase } from "../../../utils/base-path";
 
-const { src, alt = "", albumId } = Astro.props as PhotoCardProps;
+const { src, alt = "", description, albumId } =
+	Astro.props as PhotoCardProps;
+const resolvedSrc = withBase(src);
 ---
 
-<div class="gallery-photo-card break-inside-avoid mb-3">
+<figure class="gallery-photo-card break-inside-avoid mb-3 relative">
 	<div
 		data-fancybox={`gallery-${albumId}`}
-		data-src={src}
+		data-src={resolvedSrc}
 		data-type="image"
+		data-caption={description}
 		class="block rounded-xl overflow-hidden group cursor-pointer"
 	>
 		<img
-			src={src}
+			src={resolvedSrc}
 			alt={alt}
 			loading="lazy"
 			decoding="async"
 			class="w-full h-auto object-cover transition-transform duration-300 group-hover:scale-105"
 		/>
 	</div>
-</div>
+	{
+		description && (
+			<figcaption class="pointer-events-none absolute inset-x-0 bottom-0 z-10 rounded-b-xl bg-gradient-to-t from-black/80 via-black/40 to-transparent px-3 pb-2 pt-8 text-xs leading-snug text-white drop-shadow-sm sm:text-sm">
+				{description}
+			</figcaption>
+		)
+	}
+</figure>

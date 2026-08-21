@@ -4,9 +4,13 @@ import { Icon } from "astro-icon/components";
 import { announcementConfig } from "../../../config";
 import I18nKey from "../../../i18n/i18nKey";
 import { i18n } from "../../../i18n/translation";
+import { withBase } from "../../../utils/base-path";
 import WidgetLayout from "../common/WidgetLayout.astro";
 
 const config = announcementConfig;
+const announcementUrl = config.link?.external
+	? config.link.url
+	: withBase(config.link?.url || "#");
 
 interface Props {
 	class?: string;
@@ -37,7 +41,7 @@ const style = Astro.props.style;
 				{
 					config.link && config.link.enable !== false && (
 						<a
-							href={config.link.url}
+							href={announcementUrl}
 							target={config.link.external ? "_blank" : "_self"}
 							rel={
 								config.link.external

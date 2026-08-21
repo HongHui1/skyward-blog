@@ -6,6 +6,7 @@ import { getSortedPosts } from "@utils/content-utils";
 import { getPostPublicDescription } from "@utils/post-card-content";
 import { Icon } from "astro-icon/components";
 import { formatDateToYYYYMMDD } from "@/utils/date-utils";
+import { getPostUrl } from "@/utils/url-utils";
 
 interface Props {
 	type: "rss" | "atom";
@@ -100,7 +101,7 @@ const t = (key: string) => i18n(key as I18nKey);
 						<article class="bg-(--card-bg) rounded-xl p-4 border border-(--line-divider) hover:border-(--primary) transition-all duration-300">
 							<h3 class="text-lg font-semibold text-90 mb-2 hover:text-(--primary) transition-colors">
 								<a
-									href={`/posts/${post.id}/`}
+									href={getPostUrl(post)}
 									class="hover:underline"
 								>
 									{post.data.title}

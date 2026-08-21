@@ -1,0 +1,79 @@
+{
+	"mode": "external",
+	"title": "随风而行 · 南京",
+	"hidden": false,
+	"description": "从钟山的梧桐，到秦淮的灯火，再登上城墙回望这座城。",
+	"date": "2026-01-28",
+	"location": "南京",
+	"tags": ["随风而行", "南京", "旅行", "城市漫游"],
+	"layout": "masonry",
+	"columns": 3,
+	"cover": "/images/albums/nanjing/cover.jpg",
+	"photos": [
+		{
+			"src": "/images/albums/nanjing/01.webp",
+			"alt": "南京鸭血粉丝汤",
+			"description": "美味的鸭血粉丝汤~"
+		},
+		{
+			"src": "/images/albums/nanjing/02.webp",
+			"alt": "钟山风景区梧桐大道"
+		},
+		{
+			"src": "/images/albums/nanjing/03.webp",
+			"alt": "红墙月洞门"
+		},
+		{
+			"src": "/images/albums/nanjing/04.webp",
+			"alt": "从中山陵远望",
+			"description": "一路爬上来，还是值得的。"
+		},
+		{
+			"src": "/images/albums/nanjing/05.webp",
+			"alt": "南京盐水鸭"
+		},
+		{
+			"src": "/images/albums/nanjing/06.webp",
+			"alt": "秦淮河夜景",
+			"description": "夜里的秦淮河，比想象中更热闹。"
+		},
+		{
+			"src": "/images/albums/nanjing/07.webp",
+			"alt": "秦淮河灯饰"
+		},
+		{
+			"src": "/images/albums/nanjing/08.webp",
+			"alt": "南京园林水院"
+		},
+		{
+			"src": "/images/albums/nanjing/09.webp",
+			"alt": "园林池塘与锦鲤"
+		},
+		{
+			"src": "/images/albums/nanjing/10.webp",
+			"alt": "台阶上的黑白猫",
+			"description": "旅途中偶遇的一只小猫。"
+		},
+		{
+			"src": "/images/albums/nanjing/11.webp",
+			"alt": "孙中山像与街景"
+		},
+		{
+			"src": "/images/albums/nanjing/12.webp",
+			"alt": "南京总统府"
+		},
+		{
+			"src": "/images/albums/nanjing/13.webp",
+			"alt": "南京城墙坡道"
+		},
+		{
+			"src": "/images/albums/nanjing/14.webp",
+			"alt": "城墙上俯瞰南京老城"
+		},
+		{
+			"src": "/images/albums/nanjing/15.webp",
+			"alt": "南京南站站台",
+			"description": "下一站见，南京。"
+		}
+	]
+}

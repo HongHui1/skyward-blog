@@ -210,6 +210,8 @@ export const zh_TW: Translation = {
 	[Key.skillsDatabase]: "資料庫",
 	[Key.skillsTools]: "開發工具",
 	[Key.skillsOther]: "其他技能",
+	[Key.skillsLanguage]: "程式語言",
+	[Key.skillsStudy]: "正在學習",
 	[Key.skillLevel]: "熟練度",
 	[Key.skillLevelBeginner]: "初學者",
 	[Key.skillLevelIntermediate]: "中級",
@@ -247,6 +249,10 @@ export const zh_TW: Translation = {
 	[Key.aiToolsUsage]: "使用量",
 	[Key.aiToolsVisit]: "前往官網",
 	[Key.aiToolsNoResults]: "沒有匹配的 AI 工具",
+	[Key.aiToolsRating]: "站主推薦",
+	[Key.aiToolsRecommendation]: "推薦理由",
+	[Key.aiToolsBestFor]: "適合",
+	[Key.aiToolsHoverHint]: "將游標停在工具卡上查看推薦理由與適用情境",
 
 	// 時間線頁面
 	[Key.timeline]: "時間線",

@@ -1,0 +1,588 @@
+/* SkyCity 的统一运动层：默认内容可见，JS 只负责渐进增强。 */
+:root {
+  --sky-motion-instant: 140ms;
+  --sky-motion-fast: 220ms;
+  --sky-motion-page: 260ms;
+  --sky-motion-focus: 680ms;
+  --sky-ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --sky-ease-move: cubic-bezier(0.65, 0, 0.35, 1);
+}
+
+.sky-route-veil {
+  position: fixed;
+  inset: 0;
+  z-index: 90;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+html.sky-shared-transition .sky-route-veil {
+  opacity: 0;
+}
+
+html.sky-shared-transition::view-transition-group(sky-post-cover),
+html.sky-shared-transition::view-transition-group(sky-post-title) {
+  animation-duration: var(--sky-motion-page);
+  animation-timing-function: var(--sky-ease-out);
+}
+
+html.sky-shared-transition::view-transition-old(sky-post-cover),
+html.sky-shared-transition::view-transition-new(sky-post-cover) {
+  height: 100%;
+  object-fit: cover;
+  mix-blend-mode: normal;
+}
+
+html.sky-shared-transition::view-transition-old(sky-post-title),
+html.sky-shared-transition::view-transition-new(sky-post-title) {
+  height: 100%;
+  mix-blend-mode: normal;
+}
+
+html.sky-shared-transition::view-transition-old(root) {
+  animation: sky-shared-page-out 180ms ease-out both;
+}
+
+html.sky-shared-transition::view-transition-new(root) {
+  animation: sky-shared-page-in var(--sky-motion-page) var(--sky-ease-out) both;
+}
+
+@keyframes sky-shared-page-out {
+  to { opacity: 0.72; }
+}
+
+@keyframes sky-shared-page-in {
+  from { opacity: 0.78; }
+  to { opacity: 1; }
+}
+
+.sky-route-veil::before {
+  content: "";
+  position: absolute;
+  inset: -12vh auto -12vh -22vw;
+  width: 18vw;
+  min-width: 9rem;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    color-mix(in oklch, var(--primary) 16%, var(--page-bg)) 42%,
+    color-mix(in oklch, var(--primary) 34%, white) 50%,
+    color-mix(in oklch, var(--primary) 12%, var(--page-bg)) 58%,
+    transparent
+  );
+  opacity: 0;
+  transform: translate3d(-12vw, 0, 0) skewX(-10deg);
+  transition:
+    transform var(--sky-motion-page) var(--sky-ease-out),
+    opacity var(--sky-motion-instant) ease;
+}
+
+html.sky-route-leaving .sky-route-veil::before {
+  opacity: 0.72;
+  transform: translate3d(144vw, 0, 0) skewX(-10deg);
+}
+
+html.sky-route-entering .sky-route-veil::before {
+  opacity: 0;
+  transform: translate3d(144vw, 0, 0) skewX(-10deg);
+}
+
+/* 首页首屏：图片、标题和提示各自承担不同深度。 */
+html[data-sky-page="home"] body.enable-banner #banner-wrapper {
+  clip-path: inset(
+    calc(var(--sky-hero-fold, 0) * 0.55rem)
+    calc(var(--sky-hero-fold, 0) * 2.8vw)
+    calc(var(--sky-hero-fold, 0) * 2.4rem)
+    round calc(var(--sky-hero-fold, 0) * 1.45rem)
+  );
+  will-change: clip-path;
+}
+
+html[data-sky-page="home"] body.enable-banner:not(.fullscreen-banner) #banner-wrapper #banner-single-container img,
+html[data-sky-page="home"] body.enable-banner:not(.fullscreen-banner) #banner-wrapper #banner-carousel :is(.banner-image-slot-mobile, .banner-image-slot-desktop) img {
+  transform: translate3d(
+      var(--sky-hero-image-x, 0),
+      calc(var(--sky-hero-image-y, 0px) + var(--sky-hero-scroll-image-y, 0px)),
+      0
+    )
+    scale(1.045) !important;
+  transform-origin: 50% 50%;
+}
+
+html[data-sky-page="home"] .banner-text-overlay .banner-title {
+  transform: translate3d(
+      var(--sky-hero-title-x, 0px),
+      calc(var(--sky-hero-title-y, 0px) + var(--sky-hero-scroll-title-y, 0px)),
+      0
+    );
+  transform-origin: center;
+}
+
+html[data-sky-page="home"] .banner-text-overlay {
+  opacity: calc(1 - var(--sky-hero-fold, 0) * 1.18);
+  filter: blur(calc(var(--sky-hero-fold, 0) * 3.5px));
+  will-change: opacity, filter;
+}
+
+html[data-sky-page="home"] .banner-text-overlay .banner-subtitle {
+  transform: translate3d(
+    var(--sky-hero-title-x, 0px),
+    var(--sky-hero-scroll-subtitle-y, 0px),
+    0
+  );
+}
+
+html[data-sky-page="home"] .banner-text-overlay .banner-title {
+  max-width: min(90vw, 12ch);
+  margin-inline: auto;
+  font-size: clamp(3.25rem, 8vw, 6rem) !important;
+  line-height: 0.96 !important;
+  letter-spacing: -0.035em;
+  text-wrap: balance;
+}
+
+html[data-sky-page="home"] .banner-text-overlay .banner-subtitle {
+  max-width: min(88vw, 42rem);
+  margin-inline: auto;
+  font-size: clamp(1rem, 2.2vw, 1.7rem) !important;
+  line-height: 1.45;
+  text-wrap: balance;
+}
+
+.sky-hero-stage {
+  overflow: hidden;
+  color: rgba(255, 255, 255, 0.74);
+  font-variant-numeric: tabular-nums;
+  opacity: calc(1 - var(--sky-home-progress, 0) * 1.4);
+  transform: translate3d(0, calc(var(--sky-home-progress, 0) * -1.2rem), 0);
+}
+
+html[data-sky-page="inner"] .sky-hero-stage {
+  display: none;
+}
+
+.sky-hero-stage::before,
+.sky-hero-stage::after {
+  content: "";
+  position: absolute;
+  width: 2.6rem;
+  height: 2.6rem;
+  border-color: rgba(255, 255, 255, 0.38);
+}
+
+.sky-hero-stage::before {
+  top: clamp(6.5rem, 15vh, 9rem);
+  left: clamp(1.15rem, 5vw, 4.5rem);
+  border-top: 1px solid;
+  border-left: 1px solid;
+  transform: translate3d(
+    calc(var(--sky-hero-fold, 0) * 3.8vw),
+    calc(var(--sky-hero-fold, 0) * 3vh),
+    0
+  );
+}
+
+.sky-hero-stage::after {
+  right: clamp(1.15rem, 5vw, 4.5rem);
+  bottom: clamp(4.5rem, 11vh, 7rem);
+  border-right: 1px solid;
+  border-bottom: 1px solid;
+  transform: translate3d(
+    calc(var(--sky-hero-fold, 0) * -3.8vw),
+    calc(var(--sky-hero-fold, 0) * -3vh),
+    0
+  );
+}
+
+.sky-hero-stage__mark,
+.sky-hero-stage__chapter {
+  position: absolute;
+  font-size: 0.66rem;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-shadow: 0 1px 12px rgba(0, 0, 0, 0.32);
+}
+
+.sky-hero-stage__mark--north {
+  top: clamp(7rem, 16vh, 9.6rem);
+  left: clamp(1.55rem, 5.8vw, 5.2rem);
+}
+
+.sky-hero-stage__mark--east {
+  right: clamp(1.55rem, 5.8vw, 5.2rem);
+  bottom: clamp(5rem, 12vh, 7.6rem);
+  writing-mode: vertical-rl;
+}
+
+.sky-hero-stage__chapter {
+  left: clamp(1.55rem, 5.8vw, 5.2rem);
+  bottom: clamp(5rem, 12vh, 7.6rem);
+  opacity: 0.78;
+}
+
+.sky-hero-route {
+  position: absolute;
+  inset: 8% -3% 3%;
+  width: 106%;
+  height: 89%;
+  overflow: visible;
+  filter: drop-shadow(0 2px 12px rgba(10, 32, 64, 0.18));
+  opacity: calc(1 - var(--sky-hero-fold, 0) * 0.72);
+  transform: scale(calc(1 - var(--sky-hero-fold, 0) * 0.035));
+  transform-origin: 62% 42%;
+}
+
+.sky-hero-route path {
+  fill: none;
+  stroke: rgba(255, 255, 255, 0.34);
+  stroke-width: 1;
+  stroke-dasharray: 8 12;
+  vector-effect: non-scaling-stroke;
+  animation: sky-route-drift 18s linear infinite;
+}
+
+.sky-hero-route circle {
+  fill: rgba(255, 255, 255, 0.94);
+  stroke: rgba(255, 255, 255, 0.28);
+  stroke-width: 12;
+  vector-effect: non-scaling-stroke;
+  animation: sky-route-beacon 2.8s ease-in-out infinite;
+}
+
+@keyframes sky-route-drift {
+  to { stroke-dashoffset: -200; }
+}
+
+@keyframes sky-route-beacon {
+  50% { opacity: 0.48; }
+}
+
+html[data-sky-page="home"] .banner-contrast-overlay::after {
+  content: "";
+  position: absolute;
+  inset: -8%;
+  background: radial-gradient(
+    circle at 68% 28%,
+    rgba(232, 247, 255, 0.12),
+    transparent 34%
+  );
+  opacity: 0.42;
+  animation: sky-hero-light 16s var(--sky-ease-move) infinite alternate;
+}
+
+@keyframes sky-hero-light {
+  from {
+    opacity: 0.28;
+    transform: translate3d(-1.2%, 0.6%, 0) scale(1);
+  }
+  to {
+    opacity: 0.52;
+    transform: translate3d(1.2%, -0.6%, 0) scale(1.025);
+  }
+}
+
+.home-scroll-cue {
+  --sky-cue-opacity: 1;
+  min-width: 5.5rem;
+  opacity: var(--sky-cue-opacity);
+  transform: translate3d(
+    calc(-50% + var(--sky-hero-cue-x, 0px)),
+    0,
+    0
+  ) !important;
+  transition:
+    opacity var(--sky-motion-fast) ease,
+    transform var(--sky-motion-fast) var(--sky-ease-out);
+  animation: none !important;
+}
+
+.home-scroll-cue[data-hidden="true"] {
+  --sky-cue-opacity: 0;
+  transform: translate3d(
+    calc(-50% + var(--sky-hero-cue-x, 0px)),
+    0.75rem,
+    0
+  ) !important;
+  pointer-events: none;
+}
+
+.home-scroll-cue__label {
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.home-scroll-cue__track {
+  position: relative;
+  width: 1px;
+  height: 2rem;
+  overflow: hidden;
+  background: rgba(255, 255, 255, 0.32);
+}
+
+.home-scroll-cue__signal {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 1px;
+  height: 42%;
+  background: white;
+  transform: translateY(-115%);
+}
+
+.home-scroll-cue[data-engaged="true"] .home-scroll-cue__signal {
+  animation: sky-cue-response 520ms var(--sky-ease-out) both;
+}
+
+@keyframes sky-cue-response {
+  from { transform: translateY(-115%); }
+  to { transform: translateY(245%); }
+}
+
+/* 最近写下：同一 section 使用非对称遮罩语言。 */
+.home-writing.sky-writing-primed:not(.sky-writing-visible) .home-writing-header {
+  opacity: 0.35;
+  transform: translate3d(0, 0.75rem, 0);
+}
+
+.home-writing.sky-writing-primed:not(.sky-writing-visible) .direction-card-travel {
+  clip-path: inset(0 0 16% 0 round 0.8rem);
+  transform: translate3d(0, 1.25rem, 0) scale(0.985);
+}
+
+.home-writing.sky-writing-primed:not(.sky-writing-visible) .writing-side {
+  opacity: 0.3;
+  transform: translate3d(0.9rem, 0, 0);
+}
+
+.home-writing .home-writing-header,
+.home-writing .direction-card-travel,
+.home-writing .writing-side {
+  transition:
+    opacity var(--sky-motion-focus) var(--sky-ease-out),
+    transform var(--sky-motion-focus) var(--sky-ease-out),
+    clip-path var(--sky-motion-focus) var(--sky-ease-out);
+}
+
+.home-writing.sky-writing-visible .home-writing-header,
+.home-writing.sky-writing-visible .writing-side {
+  opacity: 1;
+  transform: translate3d(0, 0, 0);
+}
+
+.home-writing.sky-writing-visible .direction-card-travel {
+  clip-path: inset(0 0 0 0 round 0.8rem);
+  transform: translate3d(0, 0, 0) scale(1);
+}
+
+/* 南京主卡是首页唯一的 pointer perspective 卡。 */
+@media (hover: hover) and (pointer: fine) {
+  html[data-sky-motion="full"] .direction-card-travel {
+    transform: perspective(72rem) rotateX(var(--sky-card-rx, 0deg)) rotateY(var(--sky-card-ry, 0deg));
+    transform-style: preserve-3d;
+  }
+
+  html[data-sky-motion="full"] .direction-card-travel::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    background: radial-gradient(
+      circle at var(--sky-card-x, 50%) var(--sky-card-y, 50%),
+      rgba(255, 255, 255, 0.2),
+      transparent 34%
+    );
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity var(--sky-motion-fast) ease;
+  }
+
+  html[data-sky-motion="full"] .direction-card-travel[data-pointer-active="true"]::after {
+    opacity: 1;
+  }
+
+  html[data-sky-motion="full"] .direction-card-travel[data-pointer-active="true"] .travel-cover {
+    transform: scale(1.055) translate3d(0, -0.2%, 0);
+  }
+}
+
+/* 单一导航标记用 transform 滑动，不持续修改布局宽度。 */
+#navbar-links-container {
+  position: relative;
+}
+
+.sky-nav-indicator {
+  position: absolute;
+  left: 0;
+  bottom: 0.28rem;
+  width: 1px;
+  height: 2px;
+  border-radius: 999px;
+  background: currentColor;
+  color: var(--primary);
+  opacity: 0;
+  pointer-events: none;
+  transform: translate3d(var(--sky-nav-x, 0px), 0, 0)
+    scaleX(var(--sky-nav-scale, 1));
+  transform-origin: left center;
+  transition:
+    transform var(--sky-motion-fast) var(--sky-ease-out),
+    opacity var(--sky-motion-instant) ease,
+    background-color var(--sky-motion-instant) ease;
+}
+
+html[data-sky-page="home"] .sky-nav-indicator {
+  color: rgba(255, 255, 255, 0.92);
+}
+
+.sky-nav-active > :is(a, button) {
+  color: var(--primary);
+}
+
+html[data-sky-page="home"] .sky-nav-active > :is(a, button) {
+  color: white;
+}
+
+/* 文章图像只做一次轻量进入，正文排版本身不参与视差。 */
+.custom-md img.sky-image-awaiting:not(.sky-image-revealed) {
+  opacity: 0.55;
+  clip-path: inset(0 0 8% 0 round 0.75rem);
+  transform: scale(1.015);
+}
+
+.custom-md img.sky-image-awaiting {
+  transition:
+    opacity 480ms var(--sky-ease-out),
+    transform 560ms var(--sky-ease-out),
+    clip-path 560ms var(--sky-ease-out);
+}
+
+.custom-md img.sky-image-revealed {
+  opacity: 1;
+  clip-path: inset(0 0 0 0 round 0.75rem);
+  transform: scale(1);
+}
+
+.custom-md a:not([class]) {
+  background-image: linear-gradient(currentColor, currentColor);
+  background-position: 0 100%;
+  background-repeat: no-repeat;
+  background-size: 0 1px;
+  transition:
+    color var(--sky-motion-instant) ease,
+    background-size var(--sky-motion-fast) var(--sky-ease-out);
+}
+
+.custom-md a:not([class]):is(:hover, :focus-visible) {
+  background-size: 100% 1px;
+}
+
+html.sky-motion-paused .banner-contrast-overlay::after,
+html.sky-motion-paused .waves > .parallax use {
+  animation-play-state: paused;
+}
+
+@media (width < 768px), (hover: none), (pointer: coarse) {
+  html[data-sky-page="home"] body.enable-banner #banner-wrapper {
+    clip-path: none;
+  }
+
+  html[data-sky-page="home"] body.enable-banner:not(.fullscreen-banner) #banner-wrapper #banner-single-container img,
+  html[data-sky-page="home"] body.enable-banner:not(.fullscreen-banner) #banner-wrapper #banner-carousel :is(.banner-image-slot-mobile, .banner-image-slot-desktop) img {
+    transform: scale(1.025) !important;
+  }
+
+  html[data-sky-page="home"] .banner-text-overlay :is(.banner-title, .banner-subtitle) {
+    transform: none;
+  }
+
+  html[data-sky-page="home"] .banner-text-overlay {
+    filter: none;
+  }
+
+  html[data-sky-page="home"] .banner-contrast-overlay::after {
+    animation: none;
+    opacity: 0.34;
+  }
+
+  html[data-sky-page="home"] .banner-text-overlay .banner-title {
+    max-width: calc(100vw - 2rem);
+    font-size: clamp(2.8rem, 15vw, 4.35rem) !important;
+    line-height: 0.98 !important;
+  }
+
+  html[data-sky-page="home"] .banner-text-overlay .banner-subtitle {
+    max-width: calc(100vw - 3rem);
+    font-size: clamp(0.92rem, 4.2vw, 1.16rem) !important;
+  }
+
+  .sky-hero-route {
+    inset: 16% -18% 10%;
+    width: 136%;
+    height: 74%;
+    opacity: 0.55;
+  }
+
+  .sky-hero-stage__mark--east,
+  .sky-hero-stage__chapter {
+    display: none;
+  }
+
+  .sky-hero-stage::after {
+    bottom: 5.6rem;
+  }
+
+  .direction-card:active {
+    transform: scale(0.988);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --sky-motion-instant: 80ms;
+    --sky-motion-fast: 80ms;
+    --sky-motion-page: 80ms;
+    --sky-motion-focus: 80ms;
+  }
+
+  .sky-route-veil,
+  .banner-contrast-overlay::after,
+  .home-scroll-cue__signal,
+  .sky-hero-route {
+    display: none;
+  }
+
+  html.sky-shared-transition::view-transition-group(sky-post-cover),
+  html.sky-shared-transition::view-transition-group(sky-post-title),
+  html.sky-shared-transition::view-transition-old(root),
+  html.sky-shared-transition::view-transition-new(root) {
+    animation: none;
+  }
+
+  html[data-sky-page="home"] body.enable-banner #banner-wrapper {
+    clip-path: none;
+  }
+
+  html[data-sky-page="home"] .banner-text-overlay {
+    opacity: 1;
+    filter: none;
+  }
+
+  html[data-sky-page="home"] body.enable-banner:not(.fullscreen-banner) #banner-wrapper #banner-single-container img,
+  html[data-sky-page="home"] body.enable-banner:not(.fullscreen-banner) #banner-wrapper #banner-carousel :is(.banner-image-slot-mobile, .banner-image-slot-desktop) img,
+  html[data-sky-page="home"] .banner-text-overlay :is(.banner-title, .banner-subtitle),
+  .direction-card-travel,
+  .home-writing :is(.home-writing-header, .writing-side) {
+    transform: none !important;
+  }
+
+  .home-writing :is(.home-writing-header, .direction-card-travel, .writing-side),
+  .custom-md img {
+    opacity: 1;
+    clip-path: none;
+    transition: none;
+  }
+
+  .sky-nav-indicator {
+    transition: opacity 80ms ease;
+  }
+}

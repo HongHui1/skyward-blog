@@ -1,4 +1,5 @@
 import type { SakuraConfig } from "../types/config";
+import { withBase } from "./base-path";
 
 // 樱花对象类
 class Sakura {
@@ -212,7 +213,7 @@ export class SakuraManager {
 
 		// 创建图片对象
 		this.img = new Image();
-		this.img.src = "/sakura.webp"; // 使用樱花图片
+		this.img.src = withBase("/sakura.webp"); // 使用樱花图片
 
 		try {
 			// 等待图片加载完成

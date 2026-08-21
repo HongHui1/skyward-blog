@@ -315,18 +315,10 @@ onDestroy(() => {
 
 	<style>
 		.music-player-fab-anchor {
-			right: var(--fab-group-right, 1.5rem);
-			bottom: calc(
-				var(--fab-group-bottom, 10rem) +
-					(
-						var(--fab-button-size, 3rem) *
-							var(--fab-visible-count, 1)
-					) +
-					(
-						var(--fab-group-gap, 0.5rem) *
-							(var(--fab-visible-count, 1) - 1)
-					)
+			right: calc(
+				var(--sky-dock-right, 1rem) + var(--sky-dock-size, 3rem) + 0.85rem
 			);
+			bottom: var(--sky-dock-bottom, 50%);
 			width: 0;
 			height: 0;
 			pointer-events: none;
@@ -335,7 +327,7 @@ onDestroy(() => {
 		.music-player-fab-shell {
 			position: absolute;
 			right: 0;
-			bottom: 0.75rem;
+			bottom: 0;
 			transform-origin: bottom right;
 			pointer-events: auto;
 			will-change: transform, opacity;
@@ -348,15 +340,15 @@ onDestroy(() => {
 		}
 
 		.orb-enter {
-			animation: orbElasticIn 460ms cubic-bezier(0.22, 1.25, 0.36, 1)
+			animation: orbRevealIn 420ms cubic-bezier(0.16, 1, 0.3, 1)
 				forwards;
 		}
 
 		.orb-leave {
-			animation: orbElasticOut 360ms cubic-bezier(0.4, 0, 1, 1) forwards;
+			animation: orbRevealOut 300ms cubic-bezier(0.4, 0, 1, 1) forwards;
 		}
 
-		@keyframes orbElasticIn {
+		@keyframes orbRevealIn {
 			0% {
 				opacity: 0;
 				transform: translateX(0) scale(0.55);
@@ -371,7 +363,7 @@ onDestroy(() => {
 			}
 		}
 
-		@keyframes orbElasticOut {
+		@keyframes orbRevealOut {
 			0% {
 				opacity: 1;
 				transform: translateX(0) scale(1);
@@ -478,23 +470,13 @@ onDestroy(() => {
 
 		@media (width < 768px) {
 			.music-player-fab-anchor {
-				right: var(--fab-group-right, 0.75rem) !important;
-				bottom: calc(
-					var(--fab-group-bottom, 5rem) +
-						(
-							var(--fab-button-size, 2.75rem) *
-								var(--fab-visible-count, 1)
-						) +
-						(
-							var(--fab-group-gap, 0.5rem) *
-								(var(--fab-visible-count, 1) - 1)
-						)
-				) !important;
+				right: 0.5rem !important;
+				bottom: calc(max(0.55rem, env(safe-area-inset-bottom)) + 4.25rem) !important;
 			}
 
 			.music-player-fab-shell {
 				right: 0 !important;
-				bottom: 0.75rem !important;
+				bottom: 0 !important;
 			}
 
 			.music-player {
@@ -537,23 +519,13 @@ onDestroy(() => {
 
 		@media (width < 480px) {
 			.music-player-fab-anchor {
-				right: var(--fab-group-right, 0.5rem) !important;
-				bottom: calc(
-					var(--fab-group-bottom, 4.5rem) +
-						(
-							var(--fab-button-size, 2.5rem) *
-								var(--fab-visible-count, 1)
-						) +
-						(
-							var(--fab-group-gap, 0.5rem) *
-								(var(--fab-visible-count, 1) - 1)
-						)
-				) !important;
+				right: 0.5rem !important;
+				bottom: calc(max(0.55rem, env(safe-area-inset-bottom)) + 4.25rem) !important;
 			}
 
 			.music-player-fab-shell {
 				right: 0 !important;
-				bottom: 0.75rem !important;
+				bottom: 0 !important;
 			}
 
 			.music-player {

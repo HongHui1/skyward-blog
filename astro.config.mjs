@@ -35,6 +35,7 @@ import { AdmonitionComponent } from "./src/plugins/rehype-component-admonition.m
 import { GithubCardComponent } from "./src/plugins/rehype-component-github-card.mjs";
 import { ImageGridComponent } from "./src/plugins/rehype-component-image-grid.mjs";
 import { rehypeImageWidth } from "./src/plugins/rehype-image-width.mjs";
+import { rehypeBasePath } from "./src/plugins/rehype-base-path.mjs";
 import { rehypeMermaid } from "./src/plugins/rehype-mermaid.mjs";
 import { rehypePlantuml } from "./src/plugins/rehype-plantuml.mjs";
 import { rehypeWrapTable } from "./src/plugins/rehype-wrap-table.mjs";
@@ -96,7 +97,9 @@ export default defineConfig({
 	],
 
 	site: siteConfig.siteURL,
-	base: "/",
+	// Keep local development at `/`, while GitHub Pages builds under the
+	// repository subpath supplied by the deployment workflow.
+	base: process.env.BASE_PATH || "/",
 	trailingSlash: "always",
 	compressHTML: true,
 
@@ -124,7 +127,12 @@ export default defineConfig({
 			cache: true,
 			preload: false, // 禁用预加载以提升性能
 			accessibility: true,
-			updateHead: process.env.NODE_ENV === "production",
+			// Banner、导航和播放器位于 Swup 容器外，需保留首页加载的全局
+			// 样式资源；仅同步 title/meta，避免路由专属 CSS 被移除后破坏持久 DOM。
+			updateHead: {
+				awaitAssets: true,
+				persistAssets: true,
+			},
 			updateBodyClass: false,
 			globalInstance: true,
 			// 滚动相关配置优化
@@ -307,6 +315,7 @@ export default defineConfig({
 					},
 				],
 				rehypeImageWidth,
+				rehypeBasePath,
 			],
 		}),
 	},

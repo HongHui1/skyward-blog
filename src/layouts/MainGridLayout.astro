@@ -1,5 +1,6 @@
 ---
 import FloatingControls from "@components/control/FloatingControls.astro";
+import SkyAtlas from "@components/features/home/SkyAtlas.astro";
 import { SidebarTOC } from "@components/features/toc";
 import Banner from "@components/layout/Banner.astro";
 import RightSideBar from "@components/layout/RightSideBar.astro";
@@ -17,6 +18,7 @@ import {
 	BANNER_HEIGHT_FULLSCREEN,
 } from "../constants/constants";
 import { formatDateToYYYYMMDD } from "../utils/date-utils";
+import { withoutBase } from "../utils/base-path";
 import {
 	calculateGridLayout,
 	getBannerImages,
@@ -62,7 +64,8 @@ const hasBannerCredit = siteConfig.banner.credit.enable;
 const hasBannerLink = !!siteConfig.banner.credit.url;
 
 // 检查是否为首页
-const isHomePage = Astro.url.pathname === "/" || Astro.url.pathname === "";
+const currentPath = withoutBase(Astro.url.pathname);
+const isHomePage = currentPath === "/" || currentPath === "";
 // 手机端非首页不显示banner的CSS类
 const mobileNonHomeBannerClass = !isHomePage ? "mobile-hide-banner" : "";
 
@@ -152,11 +155,13 @@ const defaultPostListLayout = siteConfig.postListLayout?.defaultMode || "list";
 		showTextOverlay={isHomePage &&
 			(siteConfig.banner.homeText?.enable ?? false)}
 	/>
+	<SkyAtlas />
 
 	<!-- Main content -->
 	<div
+		id="main-content-start"
 		class={`absolute w-full z-30 pointer-events-none ${mobileNonHomeBannerClass ? "mobile-main-no-banner" : ""} ${siteConfig.wallpaperMode.defaultMode === "none" ? "no-banner-layout" : ""} ${transparentClass}`}
-		style={`top: ${finalMainPanelTop}`}
+		style={`top: ${isHomePage && siteConfig.wallpaperMode.defaultMode === "banner" ? "100svh" : finalMainPanelTop}`}
 	>
 		<!-- The pointer-events-none here prevent blocking the click event of the TOC -->
 		<div class="relative max-w-(--page-width) mx-auto pointer-events-auto">
@@ -171,6 +176,7 @@ const defaultPostListLayout = siteConfig.postListLayout?.defaultMode || "list";
 						<a
 							href={siteConfig.banner.credit.url}
 							id="banner-credit"
+							data-sky-banner-credit
 							target="_blank"
 							rel="noopener"
 							aria-label="Visit image source"
@@ -187,7 +193,7 @@ const defaultPostListLayout = siteConfig.postListLayout?.defaultMode || "list";
 								class="text-white/75 text-[1.25rem] mr-1"
 								name="material-symbols:copyright-outline-rounded"
 							/>
-							<div class="text-white/75 text-xs">
+							<div class="text-white/75 text-xs" data-sky-banner-credit-label>
 								{siteConfig.banner.credit.text}
 							</div>
 							<Icon

@@ -1,6 +1,7 @@
 <script lang="ts">
 import Key from "../../../../i18n/i18nKey";
 import { i18n } from "../../../../i18n/translation";
+import { withBase } from "../../../../utils/base-path";
 import type { Song } from "../types";
 
 interface Props {
@@ -29,13 +30,7 @@ function formatTime(seconds: number): string {
 }
 
 function getAssetPath(path: string): string {
-	if (path.startsWith("http://") || path.startsWith("https://")) {
-		return path;
-	}
-	if (path.startsWith("/")) {
-		return path;
-	}
-	return `/${path}`;
+	return withBase(path);
 }
 </script>
 

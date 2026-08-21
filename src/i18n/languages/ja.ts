@@ -253,6 +253,8 @@ export const ja: Translation = {
 	[Key.skillsDatabase]: "データベース",
 	[Key.skillsTools]: "開発ツール",
 	[Key.skillsOther]: "その他のスキル",
+	[Key.skillsLanguage]: "プログラミング言語",
+	[Key.skillsStudy]: "学習中",
 	[Key.skillLevel]: "熟練度",
 	[Key.skillLevelBeginner]: "初心者",
 	[Key.skillLevelIntermediate]: "中級者",
@@ -292,6 +294,11 @@ export const ja: Translation = {
 	[Key.aiToolsUsage]: "使用量",
 	[Key.aiToolsVisit]: "公式サイト",
 	[Key.aiToolsNoResults]: "該当する AI ツールがありません",
+	[Key.aiToolsRating]: "サイト運営者のおすすめ",
+	[Key.aiToolsRecommendation]: "おすすめの理由",
+	[Key.aiToolsBestFor]: "こんな時に",
+	[Key.aiToolsHoverHint]:
+		"カードにカーソルを合わせると、おすすめの理由と用途を確認できます",
 
 	// タイムラインページ
 	[Key.timeline]: "タイムライン",

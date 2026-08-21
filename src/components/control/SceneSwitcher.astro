@@ -1,0 +1,1201 @@
+---
+import { Icon } from "astro-icon/components";
+import { withBase } from "../../utils/base-path";
+
+const scenes = [
+	{
+		id: "summer",
+		name: "沉睡的夏日梦",
+		world: "鸣潮 · 达妮娅",
+		author: "动态制作：小无名罢了（Steam：小无名）",
+		credit: "鸣潮 · 达妮娅「沉睡的夏日梦」/ 小无名罢了",
+		url: "https://steamcommunity.com/sharedfiles/filedetails/?id=3738374514",
+		preview: withBase("/assets/wallpaper/denia-summer-dream-mobile.webp"),
+		desktop: withBase("/assets/wallpaper/denia-summer-dream-desktop.webp"),
+		mobile: withBase("/assets/wallpaper/denia-summer-dream-mobile.webp"),
+		posterDesktop: withBase("/assets/wallpaper/denia-summer-dream-desktop.webp"),
+		posterMobile: withBase("/assets/wallpaper/denia-summer-dream-mobile.webp"),
+		videoDesktop: withBase("/assets/wallpaper/denia-summer-dream-1440p60.mp4"),
+		videoMobile: withBase("/assets/wallpaper/denia-summer-dream-mobile-1080p30.mp4"),
+		quality: "1440p · 60 FPS 动态",
+		dynamic: true,
+		interactive: false,
+	},
+	{
+		id: "eriyi",
+		name: "世界很温柔",
+		world: "《龙族》· 上杉绘梨衣",
+		author: "4K60 修补：未竟；素材：龙族卡塞尔之门官方",
+		credit: "《龙族》上杉绘梨衣「世界很温柔」/ 未竟",
+		url: "https://steamcommunity.com/sharedfiles/filedetails/?id=3314492008",
+		preview: withBase("/assets/wallpaper/eriyi-world-gentle-mobile.webp"),
+		desktop: withBase("/assets/wallpaper/eriyi-world-gentle-poster.webp"),
+		mobile: withBase("/assets/wallpaper/eriyi-world-gentle-mobile.webp"),
+		posterDesktop: withBase("/assets/wallpaper/eriyi-world-gentle-poster.webp"),
+		posterMobile: withBase("/assets/wallpaper/eriyi-world-gentle-mobile.webp"),
+		videoDesktop: withBase("/assets/wallpaper/eriyi-world-gentle-1440p60.mp4"),
+		videoMobile: withBase("/assets/wallpaper/eriyi-world-gentle-mobile-1080p30.mp4"),
+		quality: "1440p · 60 FPS 动态",
+		dynamic: true,
+		interactive: false,
+	},
+	{
+		id: "noa",
+		name: "落花吟",
+		world: "蔚蓝档案 · 生盐诺亚",
+		author: "动态与原画：夜莺Night（AIGC 精修）",
+		credit: "蔚蓝档案 · 生盐诺亚「落花吟」/ 夜莺Night",
+		url: "https://steamcommunity.com/sharedfiles/filedetails/?id=3723257973",
+		preview: withBase("/assets/wallpaper/noa-falling-blossoms-mobile.webp"),
+		desktop: withBase("/assets/wallpaper/noa-falling-blossoms-poster.webp"),
+		mobile: withBase("/assets/wallpaper/noa-falling-blossoms-mobile.webp"),
+		posterDesktop: withBase("/assets/wallpaper/noa-falling-blossoms-poster.webp"),
+		posterMobile: withBase("/assets/wallpaper/noa-falling-blossoms-mobile.webp"),
+		videoDesktop: withBase("/assets/wallpaper/noa-falling-blossoms-4k60.mp4"),
+		videoMobile: withBase("/assets/wallpaper/noa-falling-blossoms-mobile-1080p30.mp4"),
+		quality: "原生 4K60 · 音频响应 · 鼠标光迹",
+		dynamic: true,
+		interactive: true,
+	},
+];
+---
+
+<div
+	id="sky-scene-shell"
+	class="sky-scene-shell"
+	data-open="false"
+	aria-hidden="true"
+>
+	<button
+		type="button"
+		class="sky-scene-backdrop"
+		data-sky-scene-close
+		aria-label="关闭场景选择"
+	></button>
+	<section
+		id="sky-scene-panel"
+		class="sky-scene-panel"
+		role="dialog"
+		aria-modal="true"
+		aria-labelledby="sky-scene-title"
+		tabindex="-1"
+	>
+		<header class="sky-scene-header">
+			<div>
+				<h2 id="sky-scene-title">选择一片天空</h2>
+				<p>场景会保留在这台设备上，也可以随时切回。</p>
+			</div>
+			<button
+				type="button"
+				class="sky-scene-close"
+				data-sky-scene-close
+				aria-label="关闭场景选择"
+			>
+				<Icon name="material-symbols:close-rounded" />
+			</button>
+		</header>
+
+		<div class="sky-scene-list" aria-label="可用场景">
+			{
+				scenes.map((scene) => (
+					<article class="sky-scene-choice" data-sky-scene-card={scene.id}>
+						<button
+							type="button"
+							class="sky-scene-choice__select"
+							data-sky-scene-select={scene.id}
+							aria-pressed="false"
+						>
+							<span class="sky-scene-choice__media">
+								<img
+									src={scene.preview}
+									alt={`${scene.world}场景预览`}
+									loading="lazy"
+									decoding="async"
+								/>
+								<span class="sky-scene-choice__check" aria-hidden="true">
+									<Icon name="material-symbols:check-rounded" />
+								</span>
+							</span>
+							<span class="sky-scene-choice__copy">
+								<strong>{scene.name}</strong>
+								<small>{scene.world}</small>
+								<small class="sky-scene-choice__quality">{scene.quality}</small>
+							</span>
+						</button>
+						<p>{scene.author}</p>
+						<a href={scene.url} target="_blank" rel="noopener noreferrer">
+							查看创意工坊来源
+							<Icon name="material-symbols:arrow-outward-rounded" />
+						</a>
+					</article>
+				))
+			}
+		</div>
+
+		<footer class="sky-scene-footer">
+			<div class="sky-scene-state" aria-live="polite">
+				<span class="sky-scene-state__signal" aria-hidden="true"></span>
+				<span data-sky-scene-state>当前场景已就绪</span>
+			</div>
+			<button type="button" class="sky-scene-immerse" data-sky-scene-immerse>
+				<Icon name="material-symbols:fullscreen-rounded" />
+				<span>进入沉浸模式</span>
+			</button>
+		</footer>
+	</section>
+</div>
+
+<style>
+	.sky-scene-shell {
+		position: fixed;
+		inset: 0;
+		z-index: 88;
+		visibility: hidden;
+		pointer-events: none;
+	}
+
+	.sky-scene-shell[data-open="true"] {
+		visibility: visible;
+		pointer-events: auto;
+	}
+
+	.sky-scene-backdrop {
+		position: absolute;
+		inset: 0;
+		width: 100%;
+		height: 100%;
+		border: 0;
+		background: rgb(5 12 25 / 0.34);
+		opacity: 0;
+		backdrop-filter: blur(3px);
+		-webkit-backdrop-filter: blur(3px);
+		transition: opacity 220ms ease;
+	}
+
+	.sky-scene-shell[data-open="true"] .sky-scene-backdrop {
+		opacity: 1;
+	}
+
+	.sky-scene-panel {
+		position: absolute;
+		top: 50%;
+		right: 5.25rem;
+		width: min(32rem, calc(100vw - 7rem));
+		max-height: min(47rem, calc(100svh - 2rem));
+		padding: 1.2rem;
+		overflow: auto;
+		border-radius: 0.95rem;
+		background: color-mix(in oklch, var(--card-bg) 92%, transparent);
+		box-shadow: 0 28px 80px rgb(4 12 28 / 0.32);
+		backdrop-filter: blur(24px) saturate(140%);
+		-webkit-backdrop-filter: blur(24px) saturate(140%);
+		opacity: 0;
+		clip-path: inset(10% 0 10% 12% round 0.95rem);
+		transform: translate3d(1.25rem, -50%, 0) scale(0.98);
+		transition:
+			opacity 180ms ease,
+			clip-path 440ms cubic-bezier(0.16, 1, 0.3, 1),
+			transform 440ms cubic-bezier(0.16, 1, 0.3, 1);
+	}
+
+	.sky-scene-shell[data-open="true"] .sky-scene-panel {
+		opacity: 1;
+		clip-path: inset(0 0 0 0 round 0.95rem);
+		transform: translate3d(0, -50%, 0) scale(1);
+	}
+
+	.sky-scene-header {
+		display: flex;
+		align-items: flex-start;
+		justify-content: space-between;
+		gap: 1rem;
+		margin-bottom: 1rem;
+	}
+
+	.sky-scene-header h2 {
+		margin: 0;
+		color: var(--content);
+		font-size: clamp(1.55rem, 3vw, 2.05rem);
+		font-weight: 820;
+		line-height: 1.1;
+		letter-spacing: -0.025em;
+	}
+
+	.sky-scene-header p {
+		margin: 0.45rem 0 0;
+		color: var(--content-meta);
+		font-size: 0.82rem;
+		line-height: 1.5;
+	}
+
+	.sky-scene-close {
+		display: grid;
+		width: 2.35rem;
+		height: 2.35rem;
+		flex: none;
+		place-items: center;
+		border: 0;
+		border-radius: 0.68rem;
+		background: color-mix(in oklch, var(--content) 7%, transparent);
+		color: var(--content-meta);
+		cursor: pointer;
+	}
+
+	.sky-scene-close :global(svg) {
+		width: 1.15rem;
+		height: 1.15rem;
+	}
+
+	.sky-scene-list {
+		display: grid;
+		grid-template-columns: repeat(3, minmax(0, 1fr));
+		gap: 0.75rem;
+	}
+
+	.sky-scene-choice {
+		min-width: 0;
+		padding-bottom: 0.15rem;
+	}
+
+	.sky-scene-choice__select {
+		display: block;
+		width: 100%;
+		padding: 0;
+		border: 0;
+		background: transparent;
+		color: inherit;
+		text-align: left;
+		cursor: pointer;
+	}
+
+	.sky-scene-choice__media {
+		position: relative;
+		display: block;
+		aspect-ratio: 1 / 1.14;
+		overflow: hidden;
+		border-radius: 0.8rem;
+		background: color-mix(in oklch, var(--primary) 8%, var(--card-bg));
+		box-shadow: 0 8px 24px rgb(9 18 35 / 0.13);
+		transition:
+			box-shadow 220ms ease,
+			transform 320ms cubic-bezier(0.16, 1, 0.3, 1);
+	}
+
+	.sky-scene-choice__media img {
+		width: 100%;
+		height: 100%;
+		object-fit: cover;
+		transition: transform 600ms cubic-bezier(0.16, 1, 0.3, 1);
+	}
+
+	.sky-scene-choice__select:is(:hover, :focus-visible) .sky-scene-choice__media {
+		box-shadow: 0 14px 30px rgb(9 18 35 / 0.2);
+		transform: translateY(-0.2rem);
+	}
+
+	.sky-scene-choice__select:is(:hover, :focus-visible) .sky-scene-choice__media img {
+		transform: scale(1.045);
+	}
+
+	.sky-scene-choice__select:focus-visible {
+		outline: 2px solid var(--primary);
+		outline-offset: 4px;
+		border-radius: 0.8rem;
+	}
+
+	.sky-scene-choice__check {
+		position: absolute;
+		top: 0.55rem;
+		right: 0.55rem;
+		display: grid;
+		width: 1.65rem;
+		height: 1.65rem;
+		place-items: center;
+		border-radius: 50%;
+		background: white;
+		color: var(--primary);
+		box-shadow: 0 4px 14px rgb(7 14 30 / 0.2);
+		opacity: 0;
+		transform: scale(0.72);
+		transition:
+			opacity 180ms ease,
+			transform 280ms cubic-bezier(0.16, 1, 0.3, 1);
+	}
+
+	.sky-scene-choice__check :global(svg) {
+		width: 1rem;
+		height: 1rem;
+	}
+
+	.sky-scene-choice__select[aria-pressed="true"] .sky-scene-choice__check {
+		opacity: 1;
+		transform: scale(1);
+	}
+
+	.sky-scene-choice__copy {
+		display: grid;
+		gap: 0.15rem;
+		padding: 0.62rem 0.08rem 0;
+	}
+
+	.sky-scene-choice__copy strong {
+		color: var(--content);
+		font-size: 0.85rem;
+		font-weight: 780;
+		line-height: 1.25;
+	}
+
+	.sky-scene-choice__copy small,
+	.sky-scene-choice p,
+	.sky-scene-choice > a {
+		color: var(--content-meta);
+		font-size: 0.65rem;
+		line-height: 1.45;
+	}
+
+	.sky-scene-choice__copy .sky-scene-choice__quality {
+		width: fit-content;
+		margin-top: 0.18rem;
+		padding: 0.16rem 0.34rem;
+		border-radius: 0.35rem;
+		background: color-mix(in oklch, var(--primary) 10%, transparent);
+		color: var(--primary);
+		font-size: 0.58rem;
+		font-weight: 760;
+		letter-spacing: 0.015em;
+	}
+
+	.sky-scene-choice p {
+		min-height: 2.8em;
+		margin: 0.42rem 0.08rem 0;
+	}
+
+	.sky-scene-choice > a {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.2rem;
+		margin: 0.35rem 0.08rem 0;
+		color: var(--primary);
+		font-weight: 700;
+		text-decoration: none;
+		text-underline-offset: 0.18em;
+	}
+
+	.sky-scene-choice > a:is(:hover, :focus-visible) {
+		text-decoration: underline;
+	}
+
+	.sky-scene-choice > a :global(svg) {
+		width: 0.8rem;
+		height: 0.8rem;
+	}
+
+	.sky-scene-footer {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: 1rem;
+		margin-top: 1.15rem;
+		padding-top: 0.95rem;
+		border-top: 1px solid var(--line-divider);
+	}
+
+	.sky-scene-state {
+		display: flex;
+		align-items: center;
+		gap: 0.45rem;
+		color: var(--content-meta);
+		font-size: 0.72rem;
+	}
+
+	.sky-scene-state__signal {
+		width: 0.38rem;
+		height: 0.38rem;
+		border-radius: 50%;
+		background: var(--primary);
+		box-shadow: 0 0 0 0.24rem color-mix(in oklch, var(--primary) 14%, transparent);
+	}
+
+	.sky-scene-shell[data-loading="true"] .sky-scene-state__signal {
+		animation: sky-scene-loading 800ms ease-in-out infinite alternate;
+	}
+
+	.sky-scene-immerse {
+		display: inline-flex;
+		min-height: 2.55rem;
+		align-items: center;
+		justify-content: center;
+		gap: 0.42rem;
+		padding: 0.62rem 0.86rem;
+		border: 0;
+		border-radius: 0.72rem;
+		background: var(--primary);
+		color: white;
+		font-size: 0.76rem;
+		font-weight: 760;
+		cursor: pointer;
+		box-shadow: 0 8px 22px color-mix(in oklch, var(--primary) 24%, transparent);
+		transition:
+			box-shadow 180ms ease,
+			transform 220ms cubic-bezier(0.16, 1, 0.3, 1);
+	}
+
+	.sky-scene-immerse:is(:hover, :focus-visible) {
+		box-shadow: 0 12px 28px color-mix(in oklch, var(--primary) 32%, transparent);
+		transform: translateY(-1px);
+	}
+
+	.sky-scene-immerse:active {
+		transform: scale(0.97);
+	}
+
+	.sky-scene-immerse:focus-visible,
+	.sky-scene-close:focus-visible {
+		outline: 2px solid var(--primary);
+		outline-offset: 2px;
+	}
+
+	.sky-scene-immerse :global(svg) {
+		width: 1.05rem;
+		height: 1.05rem;
+	}
+
+	:global(html.sky-scene-panel-open) {
+		overflow: hidden;
+	}
+
+	:global(html.sky-scene-changing #banner-wrapper img) {
+		filter: saturate(0.75) brightness(0.82);
+		opacity: 0.42;
+	}
+
+	:global(html[data-sky-scene="eriyi"] #banner-wrapper img),
+	:global(html[data-sky-scene="noa"] #banner-wrapper img) {
+		filter: saturate(1.05) contrast(1.02);
+	}
+
+	@keyframes sky-scene-loading {
+		to {
+			opacity: 0.32;
+			transform: scale(0.72);
+		}
+	}
+
+	@media (width < 768px) {
+		.sky-scene-panel {
+			top: auto;
+			right: 0.5rem;
+			bottom: calc(max(0.55rem, env(safe-area-inset-bottom)) + 4.5rem);
+			left: 0.5rem;
+			width: auto;
+			max-height: calc(100svh - 6rem);
+			padding: 1rem;
+			clip-path: inset(20% 0 0 0 round 0.95rem);
+			transform: translate3d(0, 1rem, 0) scale(0.98);
+		}
+
+		.sky-scene-shell[data-open="true"] .sky-scene-panel {
+			transform: translate3d(0, 0, 0) scale(1);
+		}
+
+		.sky-scene-list {
+			grid-template-columns: repeat(3, minmax(0, 1fr));
+			gap: 0.55rem;
+		}
+
+		.sky-scene-choice__media {
+			aspect-ratio: 1;
+		}
+
+		.sky-scene-choice p,
+		.sky-scene-choice > a {
+			font-size: 0.6rem;
+		}
+
+		.sky-scene-choice p {
+			display: -webkit-box;
+			min-height: 2.8em;
+			overflow: hidden;
+			-webkit-box-orient: vertical;
+			-webkit-line-clamp: 2;
+		}
+
+		.sky-scene-choice > a {
+			align-items: flex-start;
+		}
+
+		.sky-scene-footer {
+			align-items: stretch;
+			flex-direction: column;
+		}
+
+		.sky-scene-state {
+			min-height: 1rem;
+		}
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		.sky-scene-backdrop,
+		.sky-scene-panel,
+		.sky-scene-choice__media,
+		.sky-scene-choice__media img,
+		.sky-scene-choice__check,
+		.sky-scene-immerse {
+			transition: none;
+		}
+	}
+</style>
+
+<script is:inline define:vars={{ scenes }}>
+	(() => {
+		if (window.__skySceneControllerInstalled) return;
+		window.__skySceneControllerInstalled = true;
+
+		const shell = document.getElementById("sky-scene-shell");
+		const panel = document.getElementById("sky-scene-panel");
+		if (!shell || !panel) return;
+
+		const sceneMap = new Map(scenes.map((scene) => [scene.id, scene]));
+		const reducedQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
+		const mobileQuery = window.matchMedia("(max-width: 767px)");
+		const coarseQuery = window.matchMedia("(hover: none), (pointer: coarse)");
+		const stateLabel = panel.querySelector("[data-sky-scene-state]");
+		const runtime = {
+			canvas: null,
+			context: null,
+			frame: 0,
+			lastTime: 0,
+			lastPetal: 0,
+			pointer: { x: 0, y: 0, targetX: 0, targetY: 0, inside: false },
+			trail: [],
+			petals: [],
+			leaves: [],
+			musicPlaying: false,
+			spectrum: {
+				supported: false,
+				active: false,
+				energy: 0,
+				bass: 0,
+				mid: 0,
+				high: 0,
+				peak: 0,
+				updatedAt: 0,
+			},
+		};
+
+		let currentSceneId = sceneMap.has(localStorage.getItem("skyScene"))
+			? localStorage.getItem("skyScene")
+			: "summer";
+		let requestId = 0;
+		let previousFocus = null;
+		let stageObserver = null;
+
+		const dataSaverEnabled = () =>
+			Boolean(navigator.connection && navigator.connection.saveData);
+
+		const getPosterSources = (scene) => ({
+			desktop: scene.posterDesktop || scene.desktop,
+			mobile: scene.posterMobile || scene.mobile || scene.posterDesktop,
+		});
+
+		const getVideoSource = (scene) =>
+			mobileQuery.matches
+				? scene.videoMobile || scene.videoDesktop
+				: scene.videoDesktop || scene.videoMobile;
+
+		const getActiveHost = () => {
+			const mode = localStorage.getItem("wallpaperMode") || "banner";
+			return mode === "banner" ? "banner" : "fullscreen";
+		};
+
+		const isMobileImage = (image) => {
+			const own = image.classList;
+			const parent = image.parentElement?.classList;
+			return (
+				own.contains("md:hidden") ||
+				own.contains("lg:hidden") ||
+				(parent?.contains("md:hidden") ?? false) ||
+				(parent?.contains("lg:hidden") ?? false)
+			);
+		};
+
+		const updateCredit = (scene) => {
+			document.querySelectorAll("[data-sky-banner-credit]").forEach((credit) => {
+				const label = credit.querySelector("[data-sky-banner-credit-label]");
+				credit.href = scene.url;
+				if (label) label.textContent = scene.credit;
+			});
+		};
+
+		const stopCanvas = () => {
+			if (runtime.frame) cancelAnimationFrame(runtime.frame);
+			runtime.frame = 0;
+			runtime.lastTime = 0;
+			runtime.lastPetal = 0;
+			runtime.trail.length = 0;
+			runtime.petals.length = 0;
+			runtime.leaves.length = 0;
+			if (runtime.context && runtime.canvas) {
+				runtime.context.clearRect(0, 0, runtime.canvas.width, runtime.canvas.height);
+			}
+			runtime.canvas = null;
+			runtime.context = null;
+		};
+
+		const activeInteractiveStage = () =>
+			document.querySelector(
+				'.sky-dynamic-wallpaper[data-active="true"][data-scene="noa"][data-in-view="true"]',
+			);
+
+		const activeCanvasStage = () =>
+			document.querySelector(
+				'.sky-dynamic-wallpaper[data-active="true"][data-in-view="true"]:is([data-scene="noa"], [data-scene="summer"])',
+			);
+
+		const resizeCanvas = (canvas, context) => {
+			const rect = canvas.getBoundingClientRect();
+			const ratio = Math.min(window.devicePixelRatio || 1, 1.5);
+			const width = Math.max(1, Math.round(rect.width * ratio));
+			const height = Math.max(1, Math.round(rect.height * ratio));
+			if (canvas.width !== width || canvas.height !== height) {
+				canvas.width = width;
+				canvas.height = height;
+				context.setTransform(ratio, 0, 0, ratio, 0, 0);
+			}
+			return rect;
+		};
+
+		const drawPetal = (context, petal) => {
+			context.save();
+			context.translate(petal.x, petal.y);
+			context.rotate(petal.rotation);
+			context.scale(petal.scale, petal.scale * 0.62);
+			context.beginPath();
+			context.ellipse(0, 0, 5.5, 3.5, 0, 0, Math.PI * 2);
+			context.fillStyle = `rgba(255, ${Math.round(221 + petal.tint * 20)}, ${Math.round(236 + petal.tint * 12)}, ${petal.alpha})`;
+			context.fill();
+			context.restore();
+		};
+
+		const drawLeaf = (context, leaf) => {
+			context.save();
+			context.translate(leaf.x, leaf.y);
+			context.rotate(leaf.rotation);
+			context.scale(leaf.scale, leaf.scale * 0.58);
+			context.beginPath();
+			context.moveTo(-7, 0);
+			context.quadraticCurveTo(0, -5.2, 8, 0);
+			context.quadraticCurveTo(0, 5.2, -7, 0);
+			context.fillStyle = `rgba(${Math.round(158 + leaf.tint * 38)}, ${Math.round(198 + leaf.tint * 35)}, ${Math.round(103 + leaf.tint * 25)}, ${leaf.alpha})`;
+			context.fill();
+			context.beginPath();
+			context.moveTo(-5.5, 0);
+			context.lineTo(6, 0);
+			context.strokeStyle = `rgba(226, 241, 180, ${leaf.alpha * 0.56})`;
+			context.lineWidth = 0.65;
+			context.stroke();
+			context.restore();
+		};
+
+		const renderCanvas = (time) => {
+			const stage = activeCanvasStage();
+			if (
+				!stage ||
+				document.hidden ||
+				reducedQuery.matches ||
+				coarseQuery.matches
+			) {
+				stopCanvas();
+				return;
+			}
+
+			const canvas = stage.querySelector("[data-sky-scene-canvas]");
+			const context = canvas?.getContext("2d");
+			if (!canvas || !context) {
+				stopCanvas();
+				return;
+			}
+
+			runtime.canvas = canvas;
+			runtime.context = context;
+			const rect = resizeCanvas(canvas, context);
+			const delta = Math.min(40, runtime.lastTime ? time - runtime.lastTime : 16.7);
+			runtime.lastTime = time;
+			context.clearRect(0, 0, rect.width, rect.height);
+
+			const sceneId = stage.dataset.scene;
+			const spectrumFresh =
+				runtime.spectrum.supported &&
+				runtime.spectrum.active &&
+				time - runtime.spectrum.updatedAt < 420;
+			const fallbackEnergy = runtime.musicPlaying
+				? 0.36 + Math.sin(time * 0.0048) * 0.08
+				: 0.04;
+			const energy = spectrumFresh
+				? Math.max(runtime.spectrum.energy, runtime.spectrum.peak * 0.36)
+				: fallbackEnergy;
+			const bass = spectrumFresh ? runtime.spectrum.bass : fallbackEnergy * 0.72;
+			const mid = spectrumFresh ? runtime.spectrum.mid : fallbackEnergy * 0.5;
+			stage.style.setProperty("--sky-scene-energy", String(Math.max(0, energy)));
+			stage.style.setProperty("--sky-scene-bass", String(Math.max(0, bass)));
+			stage.style.setProperty("--sky-scene-mid", String(Math.max(0, mid)));
+			stage.style.setProperty(
+				"--sky-scene-glow-alpha",
+				String(0.04 + Math.min(1, energy) * 0.16),
+			);
+			stage.style.setProperty(
+				"--sky-scene-bass-alpha",
+				String(0.015 + Math.min(1, bass) * 0.11),
+			);
+			stage.style.setProperty(
+				"--sky-scene-mid-alpha",
+				String(0.012 + Math.min(1, mid) * 0.08),
+			);
+			const reactiveMode = spectrumFresh
+				? "spectrum"
+				: runtime.musicPlaying
+					? "fallback"
+					: "idle";
+			if (stage.dataset.audioReactive !== reactiveMode) {
+				stage.dataset.audioReactive = reactiveMode;
+			}
+
+			if (sceneId === "summer" && time - runtime.lastPetal > 310) {
+				runtime.lastPetal = time;
+				runtime.leaves.push({
+					x: -18,
+					y: rect.height * (0.08 + Math.random() * 0.54),
+					vx: 0.2 + Math.random() * 0.28,
+					vy: 0.025 + Math.random() * 0.08,
+					wave: Math.random() * Math.PI * 2,
+					waveSpeed: 0.0011 + Math.random() * 0.0013,
+					rotation: Math.random() * Math.PI,
+					spin: (Math.random() - 0.5) * 0.002,
+					scale: 0.46 + Math.random() * 0.72,
+					alpha: 0.16 + Math.random() * 0.2,
+					tint: Math.random(),
+				});
+			}
+
+			runtime.leaves = runtime.leaves.filter((leaf) => {
+				leaf.x += leaf.vx * delta;
+				leaf.y +=
+					leaf.vy * delta + Math.sin(time * leaf.waveSpeed + leaf.wave) * 0.17;
+				leaf.rotation += leaf.spin * delta;
+				drawLeaf(context, leaf);
+				return leaf.x < rect.width + 26 && leaf.y < rect.height + 20;
+			});
+
+			if (
+				sceneId === "noa" &&
+				time - runtime.lastPetal >
+					(runtime.musicPlaying
+						? Math.max(105, 285 - bass * 150 - mid * 48)
+						: 360)
+			) {
+				runtime.lastPetal = time;
+				runtime.petals.push({
+					x: Math.random() * rect.width,
+					y: -12,
+					vx: 0.018 * delta + Math.random() * 0.22,
+					vy: 0.28 + Math.random() * 0.34 + bass * 0.16,
+					rotation: Math.random() * Math.PI,
+					spin: (Math.random() - 0.5) * 0.0028,
+					scale: 0.52 + Math.random() * 0.7,
+					alpha: 0.18 + Math.random() * 0.3 + mid * 0.08,
+					tint: Math.random(),
+				});
+			}
+
+			runtime.petals = runtime.petals.filter((petal) => {
+				petal.x += petal.vx * delta;
+				petal.y += petal.vy * delta;
+				petal.rotation += petal.spin * delta;
+				drawPetal(context, petal);
+				return petal.y < rect.height + 18 && petal.x < rect.width + 24;
+			});
+
+			runtime.trail = runtime.trail.filter((point) => {
+				point.life -= delta * 0.00145;
+				return point.life > 0;
+			});
+
+			if (sceneId === "noa" && runtime.trail.length > 1) {
+				context.save();
+				context.lineCap = "round";
+				context.lineJoin = "round";
+				context.shadowBlur = 10 + bass * 18 + mid * 6;
+				context.shadowColor = `rgba(190, 216, 255, ${0.5 + energy * 0.36})`;
+				for (let index = 1; index < runtime.trail.length; index += 1) {
+					const previous = runtime.trail[index - 1];
+					const point = runtime.trail[index];
+					context.beginPath();
+					context.moveTo(previous.x, previous.y);
+					context.lineTo(point.x, point.y);
+					context.lineWidth = 0.8 + point.life * 2.4 + bass * 0.9;
+					context.strokeStyle = `rgba(220, 232, 255, ${point.life * (0.38 + mid * 0.3)})`;
+					context.stroke();
+				}
+				context.restore();
+			}
+
+			runtime.frame = requestAnimationFrame(renderCanvas);
+		};
+
+		const syncCanvas = () => {
+			const stage = activeCanvasStage();
+			if (!stage || document.hidden || reducedQuery.matches || coarseQuery.matches) {
+				stopCanvas();
+				return;
+			}
+			if (!runtime.frame) runtime.frame = requestAnimationFrame(renderCanvas);
+		};
+
+		const pauseStage = (stage, unload = false) => {
+			const video = stage.querySelector("[data-sky-scene-video]");
+			if (!video) return;
+			video.pause();
+			if (unload && video.getAttribute("src")) {
+				video.removeAttribute("src");
+				video.load();
+				video.dataset.source = "";
+			}
+		};
+
+		const syncPlayback = () => {
+			document.querySelectorAll("[data-sky-dynamic-host]").forEach((stage) => {
+				const video = stage.querySelector("[data-sky-scene-video]");
+				if (!video) return;
+				const active = stage.dataset.active === "true";
+				const inView = stage.dataset.inView !== "false";
+				const forcePlay = stage.dataset.forcePlay === "true";
+				const quiet = reducedQuery.matches || dataSaverEnabled();
+				if (
+					active &&
+					inView &&
+					!document.hidden &&
+					video.getAttribute("src") &&
+					(!quiet || forcePlay)
+				) {
+					video.play().catch(() => {
+						const button = stage.querySelector("[data-sky-scene-play]");
+						if (button) button.hidden = false;
+					});
+				} else {
+					video.pause();
+				}
+			});
+			syncCanvas();
+		};
+
+		const setStageReady = (stage, ready) => {
+			stage.dataset.ready = String(ready);
+			if (!ready) return;
+			const scene = sceneMap.get(stage.dataset.scene);
+			if (!scene || scene.id !== currentSceneId || stage.dataset.active !== "true") return;
+			shell.dataset.loading = "false";
+			if (stateLabel) stateLabel.textContent = `「${scene.name}」高清动态已就绪`;
+		};
+
+		const bindStage = (stage) => {
+			const video = stage.querySelector("[data-sky-scene-video]");
+			const button = stage.querySelector("[data-sky-scene-play]");
+			if (!video || video.dataset.skyBound === "true") return;
+			video.dataset.skyBound = "true";
+			video.defaultMuted = true;
+			video.muted = true;
+			video.addEventListener("loadeddata", () => setStageReady(stage, true));
+			video.addEventListener("playing", () => {
+				if (button) button.hidden = true;
+				setStageReady(stage, true);
+			});
+			video.addEventListener("error", () => {
+				stage.dataset.ready = "false";
+				shell.dataset.loading = "false";
+				if (button) button.hidden = false;
+				if (stateLabel) stateLabel.textContent = "动态加载失败，已显示高清海报";
+			});
+			button?.addEventListener("click", () => {
+				const scene = sceneMap.get(currentSceneId);
+				if (!scene?.dynamic) return;
+				stage.dataset.forcePlay = "true";
+				activateStage(stage, scene, true);
+			});
+		};
+
+		const bindStages = () => {
+			const stages = Array.from(document.querySelectorAll("[data-sky-dynamic-host]"));
+			stages.forEach(bindStage);
+			stageObserver?.disconnect();
+			stageObserver = new IntersectionObserver(
+				(entries) => {
+					entries.forEach((entry) => {
+						entry.target.dataset.inView = String(entry.isIntersecting);
+					});
+					syncPlayback();
+				},
+				{ threshold: 0.02 },
+			);
+			stages.forEach((stage) => stageObserver.observe(stage));
+			return stages;
+		};
+
+		function activateStage(stage, scene, forcePlay = false) {
+			const video = stage.querySelector("[data-sky-scene-video]");
+			const button = stage.querySelector("[data-sky-scene-play]");
+			if (!video) return;
+
+			const posters = getPosterSources(scene);
+			const poster = mobileQuery.matches ? posters.mobile : posters.desktop;
+			const source = getVideoSource(scene);
+			const quiet = reducedQuery.matches || dataSaverEnabled();
+			const sceneChanged = stage.dataset.scene !== scene.id;
+			if (sceneChanged) {
+				runtime.trail.length = 0;
+				runtime.petals.length = 0;
+				runtime.leaves.length = 0;
+				runtime.lastPetal = 0;
+			}
+			stage.dataset.active = "true";
+			stage.dataset.scene = scene.id;
+			video.poster = poster;
+			video.setAttribute("aria-label", `${scene.world}动态壁纸`);
+
+			if (!source || (quiet && !forcePlay)) {
+				pauseStage(stage, true);
+				stage.dataset.ready = "false";
+				if (button) {
+					button.hidden = false;
+					const label = button.querySelector("span");
+					if (label) label.textContent = dataSaverEnabled() ? "省流量模式：播放动态壁纸" : "播放动态壁纸";
+				}
+				shell.dataset.loading = "false";
+				if (stateLabel) stateLabel.textContent = `「${scene.name}」已显示高清海报`;
+				return;
+			}
+
+			if (forcePlay) stage.dataset.forcePlay = "true";
+			if (video.dataset.source !== source) {
+				pauseStage(stage, false);
+				stage.dataset.ready = "false";
+				video.dataset.source = source;
+				video.src = source;
+				video.load();
+			}
+			if (button) button.hidden = true;
+			if (video.readyState >= HTMLMediaElement.HAVE_CURRENT_DATA) {
+				setStageReady(stage, true);
+			} else {
+				shell.dataset.loading = "true";
+				if (stateLabel) stateLabel.textContent = `正在缓冲「${scene.name}」高清动态`;
+			}
+			syncPlayback();
+		}
+
+		const deactivateStage = (stage) => {
+			stage.dataset.active = "false";
+			stage.dataset.ready = "false";
+			stage.dataset.forcePlay = "false";
+			stage.style.removeProperty("--sky-scene-x");
+			stage.style.removeProperty("--sky-scene-y");
+			stage.style.removeProperty("--sky-scene-energy");
+			stage.style.removeProperty("--sky-scene-bass");
+			stage.style.removeProperty("--sky-scene-mid");
+			stage.style.removeProperty("--sky-scene-glow-alpha");
+			stage.style.removeProperty("--sky-scene-bass-alpha");
+			stage.style.removeProperty("--sky-scene-mid-alpha");
+			delete stage.dataset.audioReactive;
+			const button = stage.querySelector("[data-sky-scene-play]");
+			if (button) button.hidden = true;
+			pauseStage(stage, true);
+		};
+
+		const commitScene = (scene, sources) => {
+			document.documentElement.dataset.skyScene = scene.id;
+			document.querySelectorAll("#banner-single-container img").forEach((image) => {
+				image.src = isMobileImage(image) ? sources.mobile : sources.desktop;
+				image.alt = `${scene.world}主题场景`;
+			});
+			document.querySelectorAll("[data-fullscreen-wallpaper] img").forEach((image) => {
+				image.src = isMobileImage(image) ? sources.mobile : sources.desktop;
+				image.alt = `${scene.world}全屏主题场景`;
+			});
+
+			updateCredit(scene);
+			currentSceneId = scene.id;
+			localStorage.setItem("skyScene", scene.id);
+			document.documentElement.classList.remove("sky-scene-changing");
+			panel.querySelectorAll("[data-sky-scene-select]").forEach((button) => {
+				button.setAttribute(
+					"aria-pressed",
+					String(button.dataset.skySceneSelect === scene.id),
+				);
+			});
+
+			const activeHost = getActiveHost();
+			const stages = bindStages();
+			stages.forEach((stage) => {
+				if (scene.dynamic && stage.dataset.skyDynamicHost === activeHost) {
+					activateStage(stage, scene, stage.dataset.forcePlay === "true");
+				} else {
+					deactivateStage(stage);
+				}
+			});
+
+			if (!scene.dynamic) {
+				shell.dataset.loading = "false";
+				if (stateLabel) stateLabel.textContent = `已切换至「${scene.name}」`;
+			}
+			syncCanvas();
+		};
+
+		const applyScene = (sceneId, immediate = false) => {
+			const scene = sceneMap.get(sceneId) || sceneMap.get("summer");
+			if (!scene) return;
+			const sources = getPosterSources(scene);
+			const ownRequest = ++requestId;
+
+			if (immediate) {
+				commitScene(scene, sources);
+				return;
+			}
+
+			shell.dataset.loading = "true";
+			if (stateLabel) stateLabel.textContent = `正在载入「${scene.name}」`;
+			document.documentElement.classList.add("sky-scene-changing");
+
+			const preload = new Image();
+			const finish = () => {
+				if (ownRequest !== requestId) return;
+				window.setTimeout(() => commitScene(scene, sources), 110);
+			};
+			preload.onload = finish;
+			preload.onerror = finish;
+			preload.src = sources.desktop;
+		};
+
+		const updateImmersiveLabel = () => {
+			const button = panel.querySelector("[data-sky-scene-immerse]");
+			const label = button?.querySelector("span");
+			const icon = button?.querySelector("svg");
+			const immersive = localStorage.getItem("wallpaperMode") === "fullscreen";
+			if (label) label.textContent = immersive ? "退出沉浸模式" : "进入沉浸模式";
+			if (button) button.setAttribute("aria-pressed", String(immersive));
+			if (icon) icon.setAttribute("data-immersive", String(immersive));
+		};
+
+		const setOpen = (open) => {
+			shell.dataset.open = String(open);
+			shell.setAttribute("aria-hidden", String(!open));
+			panel.inert = !open;
+			document.documentElement.classList.toggle("sky-scene-panel-open", open);
+			if (open) {
+				previousFocus = document.activeElement;
+				updateImmersiveLabel();
+				window.setTimeout(() => panel.focus({ preventScroll: true }), 40);
+			} else if (previousFocus instanceof HTMLElement) {
+				previousFocus.focus({ preventScroll: true });
+			}
+		};
+
+		panel.inert = true;
+		panel.querySelectorAll("[data-sky-scene-select]").forEach((button) => {
+			button.addEventListener("click", () => applyScene(button.dataset.skySceneSelect));
+		});
+		document.querySelectorAll("[data-sky-scene-close]").forEach((button) => {
+			button.addEventListener("click", () => setOpen(false));
+		});
+		panel.querySelector("[data-sky-scene-immerse]")?.addEventListener("click", () => {
+			const immersive = localStorage.getItem("wallpaperMode") === "fullscreen";
+			localStorage.setItem("wallpaperMode", immersive ? "banner" : "fullscreen");
+			window.dispatchEvent(new CustomEvent("wallpaper-mode-change"));
+			updateImmersiveLabel();
+			setOpen(false);
+			window.scrollTo({
+				top: 0,
+				behavior: reducedQuery.matches ? "auto" : "smooth",
+			});
+		});
+
+		document.addEventListener("sky-scene-panel-toggle", () => {
+			setOpen(shell.dataset.open !== "true");
+		});
+		document.addEventListener("keydown", (event) => {
+			if (shell.dataset.open !== "true") return;
+			if (event.key === "Escape") {
+				event.preventDefault();
+				setOpen(false);
+				return;
+			}
+			if (event.key !== "Tab") return;
+			const focusable = Array.from(
+				panel.querySelectorAll('button:not([disabled]), a[href], [tabindex]:not([tabindex="-1"])'),
+			);
+			if (!focusable.length) return;
+			const first = focusable[0];
+			const last = focusable[focusable.length - 1];
+			if (event.shiftKey && document.activeElement === first) {
+				event.preventDefault();
+				last.focus();
+			} else if (!event.shiftKey && document.activeElement === last) {
+				event.preventDefault();
+				first.focus();
+			}
+		});
+
+		window.addEventListener(
+			"pointermove",
+			(event) => {
+				const stage = activeInteractiveStage();
+				if (!stage || reducedQuery.matches || coarseQuery.matches) return;
+				const rect = stage.getBoundingClientRect();
+				const inside =
+					event.clientX >= rect.left &&
+					event.clientX <= rect.right &&
+					event.clientY >= rect.top &&
+					event.clientY <= rect.bottom;
+				runtime.pointer.inside = inside;
+				if (!inside) {
+					runtime.pointer.targetX = 0;
+					runtime.pointer.targetY = 0;
+					return;
+				}
+				const localX = event.clientX - rect.left;
+				const localY = event.clientY - rect.top;
+				runtime.pointer.targetX = localX / rect.width - 0.5;
+				runtime.pointer.targetY = localY / rect.height - 0.5;
+				stage.style.setProperty("--sky-scene-light-x", `${(localX / rect.width) * 100}%`);
+				stage.style.setProperty("--sky-scene-light-y", `${(localY / rect.height) * 100}%`);
+				runtime.trail.push({ x: localX, y: localY, life: 1 });
+				if (runtime.trail.length > 46) runtime.trail.splice(0, runtime.trail.length - 46);
+				syncCanvas();
+			},
+			{ passive: true },
+		);
+
+		window.addEventListener("music-sidebar:state", (event) => {
+			runtime.musicPlaying = Boolean(event.detail?.isPlaying);
+		});
+
+		window.addEventListener("sky-music-spectrum", (event) => {
+			const detail = event.detail;
+			runtime.spectrum.supported = Boolean(detail?.supported);
+			runtime.spectrum.active = Boolean(detail?.active);
+			runtime.spectrum.energy = Number(detail?.energy) || 0;
+			runtime.spectrum.bass = Number(detail?.bass) || 0;
+			runtime.spectrum.mid = Number(detail?.mid) || 0;
+			runtime.spectrum.high = Number(detail?.high) || 0;
+			runtime.spectrum.peak = Number(detail?.peak) || 0;
+			runtime.spectrum.updatedAt = Number(detail?.timestamp) || performance.now();
+		});
+
+		const reapply = () => applyScene(currentSceneId, true);
+		reducedQuery.addEventListener("change", reapply);
+		mobileQuery.addEventListener("change", reapply);
+		coarseQuery.addEventListener("change", syncCanvas);
+		document.addEventListener("visibilitychange", syncPlayback);
+		window.addEventListener("wallpaper-mode-change", reapply);
+		document.addEventListener("swup:page:view", reapply);
+		applyScene(currentSceneId, true);
+	})();
+</script>

@@ -9,6 +9,7 @@ import {
 } from "@/components/widgets/music-player/constants";
 import type { RepeatMode, Song } from "@/components/widgets/music-player/types";
 import { musicPlayerConfig } from "@/config";
+import { withBase } from "@/utils/base-path";
 
 export interface MusicPlayerState {
 	currentSong: Song;
@@ -31,17 +32,20 @@ export interface MusicPlayerState {
 	willAutoPlay: boolean;
 }
 
+export interface MusicSpectrumDetail {
+	supported: boolean;
+	active: boolean;
+	energy: number;
+	bass: number;
+	mid: number;
+	high: number;
+	peak: number;
+	timestamp: number;
+	reason: "running" | "paused" | "cors-fallback" | "unavailable";
+}
+
 function getAssetPath(path: string): string {
-	if (!path) {
-		return "";
-	}
-	if (path.startsWith("http://") || path.startsWith("https://")) {
-		return path;
-	}
-	if (path.startsWith("/")) {
-		return path;
-	}
-	return `/${path}`;
+	return withBase(path);
 }
 
 class MusicPlayerStore {
@@ -50,6 +54,22 @@ class MusicPlayerStore {
 	private isInitialized = false;
 	private unregisterInteraction: (() => void) | undefined;
 	private listeners = new Set<(state: MusicPlayerState) => void>();
+	private audioContext: AudioContext | null = null;
+	private audioSource: MediaElementAudioSourceNode | null = null;
+	private analyser: AnalyserNode | null = null;
+	private spectrumBins: Uint8Array<ArrayBuffer> | null = null;
+	private spectrumFrame = 0;
+	private lastSpectrumDispatch = 0;
+	private spectrumSetupPromise: Promise<void> | null = null;
+	private analysisPermitted = true;
+	private corsFallbackUsed = false;
+	private smoothedSpectrum = {
+		energy: 0,
+		bass: 0,
+		mid: 0,
+		high: 0,
+		peak: 0,
+	};
 
 	constructor() {
 		this.state = this.createInitialState();
@@ -113,6 +133,8 @@ class MusicPlayerStore {
 		}
 
 		this.audio = new Audio();
+		this.audio.crossOrigin = "anonymous";
+		this.audio.preload = "metadata";
 		this.setupAudioListeners();
 		this.loadVolumeFromStorage();
 		this.registerInteractionHandler();
@@ -129,11 +151,13 @@ class MusicPlayerStore {
 
 		this.audio.addEventListener("play", () => {
 			this.state.isPlaying = true;
+			this.startSpectrumAnalysis();
 			this.broadcastState();
 		});
 
 		this.audio.addEventListener("pause", () => {
 			this.state.isPlaying = false;
+			this.stopSpectrumLoop("paused");
 			this.broadcastState();
 		});
 
@@ -149,6 +173,9 @@ class MusicPlayerStore {
 		});
 
 		this.audio.addEventListener("error", () => {
+			if (this.retryWithoutCors()) {
+				return;
+			}
 			this.handleAudioError();
 		});
 
@@ -160,6 +187,218 @@ class MusicPlayerStore {
 			this.state.isLoading = true;
 			this.broadcastState();
 		});
+	}
+
+	private retryWithoutCors(): boolean {
+		if (
+			typeof window === "undefined" ||
+			!this.audio ||
+			!this.analysisPermitted ||
+			this.corsFallbackUsed ||
+			!this.state.currentSong.url
+		) {
+			return false;
+		}
+
+		const source = getAssetPath(this.state.currentSong.url);
+		const absoluteSource = new URL(source, window.location.href);
+		if (absoluteSource.origin === window.location.origin) {
+			return false;
+		}
+
+		const shouldResume = this.state.isPlaying || this.state.willAutoPlay;
+		const previousAudio = this.audio;
+		previousAudio.pause();
+		this.teardownSpectrumAnalysis();
+
+		this.analysisPermitted = false;
+		this.corsFallbackUsed = true;
+		this.audio = new Audio();
+		this.audio.preload = "metadata";
+		this.setupAudioListeners();
+		this.audio.volume = this.state.volume;
+		this.audio.muted = this.state.isMuted;
+		this.state.willAutoPlay = shouldResume;
+		this.audio.src = source;
+		this.audio.load();
+		this.dispatchSpectrum(false, false, "cors-fallback");
+		return true;
+	}
+
+	private startSpectrumAnalysis(): void {
+		if (typeof window === "undefined" || !this.audio || !this.analysisPermitted) {
+			this.dispatchSpectrum(false, false, "unavailable");
+			return;
+		}
+		if (this.spectrumFrame || this.spectrumSetupPromise) {
+			return;
+		}
+
+		this.spectrumSetupPromise = this.ensureSpectrumGraph().finally(() => {
+			this.spectrumSetupPromise = null;
+		});
+	}
+
+	private async ensureSpectrumGraph(): Promise<void> {
+		const audio = this.audio;
+		if (!audio || !this.analysisPermitted) {
+			return;
+		}
+
+		try {
+			const AudioContextConstructor =
+				window.AudioContext ??
+				(window as typeof window & { webkitAudioContext?: typeof AudioContext })
+					.webkitAudioContext;
+			if (!AudioContextConstructor) {
+				this.dispatchSpectrum(false, false, "unavailable");
+				return;
+			}
+
+			this.audioContext ??= new AudioContextConstructor({ latencyHint: "interactive" });
+			if (this.audioContext.state !== "running") {
+				await this.audioContext.resume();
+			}
+			if (
+				this.audio !== audio ||
+				!this.analysisPermitted ||
+				this.audioContext.state !== "running"
+			) {
+				this.dispatchSpectrum(false, false, "unavailable");
+				return;
+			}
+
+			if (!this.audioSource) {
+				this.audioSource = this.audioContext.createMediaElementSource(audio);
+				this.analyser = this.audioContext.createAnalyser();
+				this.analyser.fftSize = 512;
+				this.analyser.smoothingTimeConstant = 0.72;
+				this.audioSource.connect(this.analyser);
+				this.analyser.connect(this.audioContext.destination);
+				this.spectrumBins = new Uint8Array(this.analyser.frequencyBinCount);
+			}
+
+			this.lastSpectrumDispatch = 0;
+			this.spectrumFrame = window.requestAnimationFrame(this.sampleSpectrum);
+		} catch (_error) {
+			this.dispatchSpectrum(false, false, "unavailable");
+		}
+	}
+
+	private readonly sampleSpectrum = (timestamp: number): void => {
+		if (!this.audio || !this.analyser || !this.spectrumBins || !this.state.isPlaying) {
+			this.stopSpectrumLoop("paused");
+			return;
+		}
+
+		if (!document.hidden && timestamp - this.lastSpectrumDispatch >= 32) {
+			this.lastSpectrumDispatch = timestamp;
+			this.analyser.getByteFrequencyData(this.spectrumBins);
+			const bass = this.readSpectrumBand(42, 190);
+			const mid = this.readSpectrumBand(190, 2200);
+			const high = this.readSpectrumBand(2200, 8500);
+			let peak = 0;
+			for (const value of this.spectrumBins) {
+				peak = Math.max(peak, value / 255);
+			}
+			peak = Math.max(0, Math.min(1, (peak - 0.08) / 0.9));
+			const energy = Math.min(1, bass * 0.5 + mid * 0.36 + high * 0.14);
+
+			this.smoothedSpectrum.bass = this.smoothBand(this.smoothedSpectrum.bass, bass);
+			this.smoothedSpectrum.mid = this.smoothBand(this.smoothedSpectrum.mid, mid);
+			this.smoothedSpectrum.high = this.smoothBand(this.smoothedSpectrum.high, high);
+			this.smoothedSpectrum.peak = this.smoothBand(this.smoothedSpectrum.peak, peak);
+			this.smoothedSpectrum.energy = this.smoothBand(
+				this.smoothedSpectrum.energy,
+				energy,
+			);
+			this.dispatchSpectrum(true, true, "running");
+		}
+
+		this.spectrumFrame = window.requestAnimationFrame(this.sampleSpectrum);
+	};
+
+	private readSpectrumBand(minHz: number, maxHz: number): number {
+		if (!this.audioContext || !this.spectrumBins) {
+			return 0;
+		}
+		const binWidth = this.audioContext.sampleRate / 2 / this.spectrumBins.length;
+		const start = Math.max(0, Math.floor(minHz / binWidth));
+		const end = Math.min(
+			this.spectrumBins.length - 1,
+			Math.ceil(maxHz / binWidth),
+		);
+		let squareSum = 0;
+		let count = 0;
+		for (let index = start; index <= end; index += 1) {
+			const normalized = this.spectrumBins[index] / 255;
+			squareSum += normalized * normalized;
+			count += 1;
+		}
+		const rms = count > 0 ? Math.sqrt(squareSum / count) : 0;
+		const normalized = Math.max(0, Math.min(1, (rms - 0.02) / 1.22));
+		return normalized ** 1.18;
+	}
+
+	private smoothBand(current: number, target: number): number {
+		const amount = target > current ? 0.42 : 0.11;
+		return current + (target - current) * amount;
+	}
+
+	private stopSpectrumLoop(
+		reason: MusicSpectrumDetail["reason"] = "paused",
+	): void {
+		if (this.spectrumFrame) {
+			window.cancelAnimationFrame(this.spectrumFrame);
+			this.spectrumFrame = 0;
+		}
+		this.smoothedSpectrum = { energy: 0, bass: 0, mid: 0, high: 0, peak: 0 };
+		this.dispatchSpectrum(Boolean(this.analyser), false, reason);
+	}
+
+	private dispatchSpectrum(
+		supported: boolean,
+		active: boolean,
+		reason: MusicSpectrumDetail["reason"],
+	): void {
+		if (typeof window === "undefined") {
+			return;
+		}
+		const detail: MusicSpectrumDetail = {
+			supported,
+			active,
+			...this.smoothedSpectrum,
+			timestamp: performance.now(),
+			reason,
+		};
+		const debugWindow = window as typeof window & {
+			__skyMusicSpectrum?: MusicSpectrumDetail;
+		};
+		debugWindow.__skyMusicSpectrum = detail;
+		document.documentElement.dataset.skyAudioSpectrum = active
+			? "active"
+			: supported
+				? "ready"
+				: "fallback";
+		window.dispatchEvent(new CustomEvent<MusicSpectrumDetail>("sky-music-spectrum", { detail }));
+	}
+
+	private teardownSpectrumAnalysis(): void {
+		if (this.spectrumFrame) {
+			window.cancelAnimationFrame(this.spectrumFrame);
+			this.spectrumFrame = 0;
+		}
+		this.audioSource?.disconnect();
+		this.analyser?.disconnect();
+		if (this.audioContext && this.audioContext.state !== "closed") {
+			void this.audioContext.close().catch(() => {});
+		}
+		this.audioContext = null;
+		this.audioSource = null;
+		this.analyser = null;
+		this.spectrumBins = null;
+		this.spectrumSetupPromise = null;
+		this.smoothedSpectrum = { energy: 0, bass: 0, mid: 0, high: 0, peak: 0 };
 	}
 
 	private handleAudioEnded(): void {
@@ -252,6 +491,10 @@ class MusicPlayerStore {
 			musicPlayerConfig.meting_api ??
 			"https://www.bilibili.uno/api?server=:server&type=:type&id=:id&auth=:auth&r=:r";
 		const meting_id = musicPlayerConfig.id ?? "14164869977";
+		const meting_ids =
+			musicPlayerConfig.ids && musicPlayerConfig.ids.length > 0
+				? musicPlayerConfig.ids
+				: [meting_id];
 		const meting_server = musicPlayerConfig.server ?? "netease";
 		const meting_type = musicPlayerConfig.type ?? "playlist";
 
@@ -260,7 +503,7 @@ class MusicPlayerStore {
 				meting_api,
 				meting_server,
 				meting_type,
-				meting_id,
+				meting_ids,
 			);
 		} else {
 			this.loadLocalPlaylist();
@@ -271,28 +514,32 @@ class MusicPlayerStore {
 		api: string,
 		server: string,
 		type: string,
-		id: string,
+		ids: string[],
 	): Promise<void> {
-		if (!api || !id) {
+		if (!api || ids.length === 0) {
 			return;
 		}
 
 		this.state.isLoading = true;
 		this.broadcastState();
 
-		const apiUrl = api
-			.replace(":server", server)
-			.replace(":type", type)
-			.replace(":id", id)
-			.replace(":auth", "")
-			.replace(":r", Date.now().toString());
-
 		try {
-			const res = await fetch(apiUrl);
-			if (!res.ok) {
-				throw new Error("meting api error");
-			}
-			const list: Record<string, unknown>[] = await res.json();
+			const lists = await Promise.all(
+				ids.map(async (id, index) => {
+					const apiUrl = api
+						.replace(":server", server)
+						.replace(":type", type)
+						.replace(":id", id)
+						.replace(":auth", "")
+						.replace(":r", (Date.now() + index).toString());
+					const res = await fetch(apiUrl);
+					if (!res.ok) {
+						throw new Error("meting api error");
+					}
+					return (await res.json()) as Record<string, unknown>[];
+				}),
+			);
+			const list = lists.flat();
 			this.state.playlist = list.map((song) => this.convertMetingSong(song));
 			this.state.isLoading = false;
 
@@ -361,9 +608,12 @@ class MusicPlayerStore {
 		}
 		this.state.willAutoPlay = autoPlay;
 		if (this.audio) {
-			if (this.audio.src && song.url) {
-				this.audio.src = "";
-			}
+			this.stopSpectrumLoop("paused");
+			this.analysisPermitted = true;
+			this.corsFallbackUsed = false;
+			this.audio.pause();
+			this.audio.removeAttribute("src");
+			this.audio.crossOrigin = "anonymous";
 			this.audio.src = getAssetPath(song.url);
 			this.audio.load();
 		}
@@ -392,6 +642,7 @@ class MusicPlayerStore {
 		if (this.state.isPlaying) {
 			this.audio.pause();
 		} else {
+			this.startSpectrumAnalysis();
 			this.audio.play().catch(() => {});
 		}
 	}
@@ -400,6 +651,7 @@ class MusicPlayerStore {
 		if (!this.audio || !this.state.currentSong.url) {
 			return;
 		}
+		this.startSpectrumAnalysis();
 		this.audio.play().catch(() => {});
 	}
 
@@ -583,6 +835,7 @@ class MusicPlayerStore {
 			this.audio.src = "";
 			this.audio = null;
 		}
+		this.teardownSpectrumAnalysis();
 		this.isInitialized = false;
 	}
 }

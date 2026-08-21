@@ -169,11 +169,15 @@ function renderMomentCard(
 	const locationHtml = moment.location
 		? `<span class="flex items-center gap-1"><iconify-icon icon="material-symbols:location-on" class="text-xs w-3.5 h-3.5"></iconify-icon>${escapeHtml(moment.location)}</span>`
 		: "";
+	const titleHtml = moment.title
+		? `<h2 class="text-lg md:text-xl font-bold text-black/90 dark:text-white/90 mb-3">${escapeHtml(moment.title)}</h2>`
+		: "";
 
 	return `
 	<div class="moment-card group relative bg-transparent rounded-xl border border-black/10 dark:border-white/10 overflow-hidden transition-all duration-300 hover:shadow-xl hover:-translate-y-1" data-tags="${tagsAttr}">
 		<div class="p-5">
-			<p class="text-sm md:text-base text-black/90 dark:text-white/90 leading-relaxed mb-3">${escapeHtml(moment.content)}</p>
+			${titleHtml}
+			<p class="text-sm md:text-base text-black/90 dark:text-white/90 leading-relaxed whitespace-pre-line mb-3">${escapeHtml(moment.content)}</p>
 			${imagesHtml}
 			${tagsHtml}
 			<hr class="border-t border-black/5 dark:border-white/5 my-3" />

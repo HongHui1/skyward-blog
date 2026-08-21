@@ -54,6 +54,9 @@ src/data/bilibili-data.json
 # Lighthouse CI
 .lighthouseci/
 
+# Local design QA, screenshots, and backup media
+.impeccable/
+
 # Live2D editor source files
 *.psd
 *.psd~

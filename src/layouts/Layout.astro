@@ -1,6 +1,7 @@
 ---
 import { Font } from "astro:assets";
 import { PageProgressBar } from "@components/control/PageProgressBar";
+import SceneSwitcher from "@components/control/SceneSwitcher.astro";
 import Pio from "@components/features/pio/Pio.astro";
 import ConfigCarrier from "@components/misc/ConfigCarrier.astro";
 import MusicPlayer from "@components/widgets/music-player/MusicPlayer.svelte";
@@ -13,6 +14,7 @@ const BANNER_HEIGHT_EXTEND = 30;
 const BANNER_HEIGHT_HOME = BANNER_HEIGHT + BANNER_HEIGHT_EXTEND;
 
 import { PAGE_WIDTH } from "../constants/constants";
+import { url } from "../utils/url-utils";
 import "../styles/main.css";
 import "../styles/mobile-navbar.css";
 import "../styles/wallpaper-navbar-transparent.css";
@@ -110,12 +112,12 @@ if (siteConfig.generateOgImages && postSlug) {
 	// For post pages with cover images, use the resolved cover image
 	ogImageUrl = coverImage.startsWith("http")
 		? coverImage
-		: new URL(coverImage, Astro.site).toString();
+		: new URL(url(coverImage), Astro.site).toString();
 } else if (banner) {
 	// For others, use the first banner as OG image
 	ogImageUrl = banner.startsWith("http")
 		? banner
-		: new URL(banner, Astro.site).toString();
+		: new URL(url(banner), Astro.site).toString();
 }
 
 // const siteLang = siteConfig.lang.replace('_', '-')
@@ -146,6 +148,9 @@ const bannerOffset =
 >
 	<head>
 		<meta charset="UTF-8" />
+		<style is:inline data-sky-layer-order>
+			@layer properties, theme, base, components, utilities;
+		</style>
 		<Font cssVariable="--font-body" preload />
 		<Font cssVariable="--font-cjk" />
 		<Font cssVariable="--font-jetbrains-mono" />
@@ -229,6 +234,8 @@ const bannerOffset =
 			duration={siteConfig.pageProgressBar?.duration ?? 8000}
 		/>
 		<slot />
+		<div class="sky-route-veil" aria-hidden="true"></div>
+		<SceneSwitcher />
 
 		<!-- Music Player - 核心始终加载（当enable=true），UI通过showFloatingPlayer控制 -->
 		<MusicPlayer client:idle />
@@ -311,9 +318,11 @@ const bannerOffset =
 <script>
 	// Swup 页面过渡管理器 - 统一入口
 	// 所有功能已重构为模块化架构，详见 src/scripts/ 目录
+	import { initMotionSystem } from "../scripts/motion-system";
 	import { initSwupManager } from "../scripts/swup-manager";
 
-	// 初始化 Swup 管理器
+	// 先建立 motion 单例，再注册 Swup 钩子，避免极快导航时丢失首个生命周期事件。
+	initMotionSystem();
 	initSwupManager();
 </script>
 

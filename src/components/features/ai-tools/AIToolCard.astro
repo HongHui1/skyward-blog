@@ -10,21 +10,17 @@ const { tool } = Astro.props as AIToolCardProps;
 const lang = siteConfig.lang;
 
 const toolColor = tool.color || "var(--primary)";
-
-const getFrequencyText = (frequency: string) => {
-	switch (frequency) {
-		case "daily":
-			return i18n(I18nKey.aiToolsFrequencyDaily);
-		case "weekly":
-			return i18n(I18nKey.aiToolsFrequencyWeekly);
-		case "occasional":
-			return i18n(I18nKey.aiToolsFrequencyOccasional);
-		case "experimental":
-			return i18n(I18nKey.aiToolsFrequencyExperimental);
-		default:
-			return frequency;
-	}
-};
+const rating = Math.min(5, Math.max(0, tool.rating ?? 0));
+const ratingText = Number.isInteger(rating)
+	? rating.toFixed(0)
+	: rating.toFixed(1);
+const insightId = `${tool.id}-recommendation`;
+const ratingIcons = Array.from({ length: 5 }, (_, index) => {
+	const threshold = index + 1;
+	if (rating >= threshold) return "material-symbols:star-rounded";
+	if (rating >= threshold - 0.5) return "material-symbols:star-half-rounded";
+	return "material-symbols:star-outline-rounded";
+});
 
 const getFrequencyWidth = (frequency: string) => {
 	switch (frequency) {
@@ -43,10 +39,11 @@ const getFrequencyWidth = (frequency: string) => {
 ---
 
 <div
-	class="ai-tool-card group relative bg-transparent rounded-xl border border-black/10 dark:border-white/10 overflow-hidden transition-all duration-300 hover:shadow-xl hover:-translate-y-1"
+	class="ai-tool-card group relative bg-transparent rounded-xl border border-black/10 dark:border-white/10"
 	data-category={tool.category}
+	style={`--tool-color: ${toolColor};`}
 >
-	<div class="p-5">
+	<div class="tool-card-content relative z-10 p-5">
 		<div class="flex items-start gap-4 mb-3">
 			<div
 				class="w-12 h-12 flex-shrink-0 rounded-lg flex items-center justify-center"
@@ -66,11 +63,15 @@ const getFrequencyWidth = (frequency: string) => {
 					>
 						{tool.name}
 					</h3>
-					<span
-						class="shrink-0 px-2 py-0.5 text-xs rounded-md bg-[var(--primary)]/10 text-[var(--primary)] font-medium whitespace-nowrap"
-					>
-						{getFrequencyText(tool.frequency)}
-					</span>
+					{rating > 0 && (
+						<span
+							class="tool-rating-chip"
+							aria-label={`${i18n(I18nKey.aiToolsRating)} ${ratingText} / 5`}
+						>
+							<Icon name="material-symbols:star-rounded" aria-hidden="true" />
+							<span>{ratingText}</span>
+						</span>
+					)}
 				</div>
 				{tool.usage && (
 					<p class="text-xs text-black/50 dark:text-white/50 line-clamp-1">
@@ -98,13 +99,16 @@ const getFrequencyWidth = (frequency: string) => {
 			</div>
 		)}
 
-		<div class="mt-3 w-full bg-[var(--btn-regular-bg)] rounded-full h-1.5">
-			<div
-				class="h-1.5 rounded-full transition-all duration-500"
-				style={`width: ${getFrequencyWidth(tool.frequency)}; background-color: ${toolColor}`}
-			>
-			</div>
-		</div>
+		{
+			tool.frequency && (
+				<div class="mt-3 w-full bg-[var(--btn-regular-bg)] rounded-full h-1.5">
+					<div
+						class="h-1.5 rounded-full transition-all duration-500"
+						style={`width: ${getFrequencyWidth(tool.frequency)}; background-color: ${toolColor}`}
+					/>
+				</div>
+			)
+		}
 
 		{tool.url && (
 			<div class="mt-3">
@@ -112,7 +116,8 @@ const getFrequencyWidth = (frequency: string) => {
 					href={tool.url}
 					target="_blank"
 					rel="noopener noreferrer"
-					class="inline-flex items-center gap-1 text-xs text-[var(--primary)] hover:underline"
+					class="tool-primary-link inline-flex items-center gap-1 text-xs text-[var(--primary)] hover:underline"
+					aria-describedby={tool.recommendation ? insightId : undefined}
 				>
 					<span>{i18n(I18nKey.aiToolsVisit)}</span>
 					<svg
@@ -132,18 +137,365 @@ const getFrequencyWidth = (frequency: string) => {
 				</a>
 			</div>
 		)}
+
+		{rating > 0 && tool.recommendation && (
+			<details class="tool-touch-insight">
+				<summary>
+					<span>
+						<Icon name="material-symbols:recommend-outline" aria-hidden="true" />
+						{i18n(I18nKey.aiToolsRecommendation)}
+					</span>
+					<Icon
+						name="material-symbols:expand-more-rounded"
+						class="tool-touch-chevron"
+						aria-hidden="true"
+					/>
+				</summary>
+				<div class="tool-touch-body">
+					<p>{getLocaleString(tool.recommendation, lang)}</p>
+					{tool.bestFor && (
+						<p class="tool-touch-best-for">
+							<strong>{i18n(I18nKey.aiToolsBestFor)}</strong>
+							<span>{getLocaleString(tool.bestFor, lang)}</span>
+						</p>
+					)}
+				</div>
+			</details>
+		)}
 	</div>
 
+	{rating > 0 && tool.recommendation && (
+		<aside
+			id={insightId}
+			class="tool-insight"
+			aria-label={`${tool.name} ${i18n(I18nKey.aiToolsRating)}`}
+		>
+			<div class="tool-insight-heading">
+				<div class="tool-insight-kicker">
+					<Icon name="material-symbols:recommend-outline" aria-hidden="true" />
+					<span>{i18n(I18nKey.aiToolsRating)}</span>
+				</div>
+				<div
+					class="tool-stars"
+					aria-label={`${ratingText} / 5`}
+				>
+					<span class="tool-star-icons" aria-hidden="true">
+						{ratingIcons.map((icon) => <Icon name={icon} />)}
+					</span>
+					<strong>{ratingText}</strong>
+				</div>
+			</div>
+
+			<div class="tool-insight-copy">
+				<span>{i18n(I18nKey.aiToolsRecommendation)}</span>
+				<p>{getLocaleString(tool.recommendation, lang)}</p>
+			</div>
+
+			{tool.bestFor && (
+				<p class="tool-best-for">
+					<strong>{i18n(I18nKey.aiToolsBestFor)}</strong>
+					<span>{getLocaleString(tool.bestFor, lang)}</span>
+				</p>
+			)}
+
+			{tool.url && (
+				<a
+					href={tool.url}
+					target="_blank"
+					rel="noopener noreferrer"
+					class="tool-insight-action"
+				>
+					<span>{i18n(I18nKey.aiToolsVisit)}</span>
+					<Icon name="material-symbols:arrow-outward-rounded" aria-hidden="true" />
+				</a>
+			)}
+		</aside>
+	)}
+
 	<div
-		class="absolute inset-0 bg-gradient-to-br from-[var(--primary)]/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"
+		class="tool-card-wash absolute inset-0 rounded-xl bg-gradient-to-br from-[var(--primary)]/5 to-transparent opacity-0 group-hover:opacity-100 pointer-events-none"
 	>
 	</div>
 </div>
 
 <style>
 	.ai-tool-card {
-		animation: fadeInUp 0.5s ease-out forwards;
+		isolation: isolate;
+		overflow: hidden;
+		animation: fadeInUp 0.32s cubic-bezier(0.19, 1, 0.22, 1) forwards;
 		opacity: 0;
+		transition:
+			transform 160ms ease,
+			box-shadow 180ms ease,
+			border-color 160ms ease;
+	}
+
+	.ai-tool-card:hover {
+		transform: translateY(-3px);
+		border-color: color-mix(in oklch, var(--tool-color) 36%, transparent);
+		box-shadow: 0 18px 42px -28px color-mix(in oklch, var(--tool-color) 58%, transparent);
+	}
+
+	.tool-card-content {
+		transition:
+			opacity 150ms ease,
+			transform 180ms cubic-bezier(0.19, 1, 0.22, 1);
+	}
+
+	.tool-card-wash {
+		transition: opacity 160ms ease;
+	}
+
+	.tool-rating-chip {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.2rem;
+		min-width: 2.75rem;
+		padding: 0.2rem 0.45rem;
+		border-radius: 0.5rem;
+		background: color-mix(in oklch, var(--tool-color) 14%, transparent);
+		color: color-mix(in oklch, var(--tool-color) 82%, var(--content));
+		font-size: 0.72rem;
+		font-weight: 750;
+		font-variant-numeric: tabular-nums;
+		white-space: nowrap;
+	}
+
+	.tool-rating-chip iconify-icon {
+		width: 0.9rem;
+		height: 0.9rem;
+	}
+
+	.tool-primary-link {
+		min-height: 2.75rem;
+		padding-inline: 0.15rem;
+		text-underline-offset: 0.2em;
+	}
+
+	.tool-primary-link:focus-visible,
+	.tool-insight-action:focus-visible,
+	.tool-touch-insight summary:focus-visible {
+		outline: 2px solid var(--primary);
+		outline-offset: 3px;
+		border-radius: 0.4rem;
+	}
+
+	.tool-insight {
+		position: absolute;
+		z-index: 30;
+		inset: 0.75rem;
+		display: flex;
+		flex-direction: column;
+		gap: 0.7rem;
+		padding: 1rem;
+		border-radius: 0.875rem;
+		background: color-mix(in oklch, var(--card-bg) 91%, var(--tool-color) 9%);
+		box-shadow: 0 14px 34px -22px color-mix(in oklch, var(--tool-color) 62%, transparent);
+		backdrop-filter: blur(14px) saturate(1.08);
+		opacity: 0;
+		visibility: hidden;
+		transform: translateY(7px) scale(0.985);
+		transform-origin: center bottom;
+		pointer-events: none;
+		transition:
+			opacity 150ms ease-out,
+			transform 190ms cubic-bezier(0.19, 1, 0.22, 1),
+			visibility 0s linear 190ms;
+	}
+
+	.tool-insight-heading,
+	.tool-stars,
+	.tool-insight-kicker,
+	.tool-best-for,
+	.tool-insight-action {
+		display: flex;
+		align-items: center;
+	}
+
+	.tool-insight-heading {
+		justify-content: space-between;
+		gap: 0.75rem;
+	}
+
+	.tool-insight-kicker {
+		gap: 0.35rem;
+		color: color-mix(in oklch, var(--tool-color) 78%, var(--content));
+		font-size: 0.78rem;
+		font-weight: 750;
+	}
+
+	.tool-insight-kicker iconify-icon {
+		width: 1rem;
+		height: 1rem;
+	}
+
+	.tool-stars {
+		gap: 0.38rem;
+		color: color-mix(in oklch, var(--tool-color) 84%, var(--content));
+		font-size: 0.78rem;
+		font-variant-numeric: tabular-nums;
+	}
+
+	.tool-star-icons {
+		display: inline-flex;
+		gap: 0.02rem;
+	}
+
+	.tool-star-icons iconify-icon {
+		width: 0.88rem;
+		height: 0.88rem;
+	}
+
+	.tool-insight-copy > span {
+		display: block;
+		margin-bottom: 0.2rem;
+		color: color-mix(in oklch, var(--content) 56%, transparent);
+		font-size: 0.68rem;
+		font-weight: 700;
+		letter-spacing: 0.04em;
+	}
+
+	.tool-insight-copy p {
+		margin: 0;
+		color: color-mix(in oklch, var(--content) 88%, transparent);
+		font-size: 0.8rem;
+		line-height: 1.55;
+	}
+
+	.tool-best-for {
+		align-items: flex-start;
+		gap: 0.4rem;
+		margin: 0;
+		color: color-mix(in oklch, var(--content) 66%, transparent);
+		font-size: 0.72rem;
+		line-height: 1.45;
+	}
+
+	.tool-best-for strong {
+		flex: 0 0 auto;
+		color: color-mix(in oklch, var(--tool-color) 80%, var(--content));
+	}
+
+	.tool-insight-action {
+		align-self: flex-start;
+		gap: 0.25rem;
+		margin-top: auto;
+		min-height: 2rem;
+		color: color-mix(in oklch, var(--tool-color) 82%, var(--content));
+		font-size: 0.74rem;
+		font-weight: 700;
+		text-decoration: none;
+	}
+
+	.tool-insight-action iconify-icon {
+		width: 0.9rem;
+		height: 0.9rem;
+		transition: transform 140ms ease;
+	}
+
+	.tool-insight-action:hover iconify-icon {
+		transform: translate(2px, -2px);
+	}
+
+	.tool-touch-insight {
+		display: none;
+	}
+
+	@media (hover: hover) and (pointer: fine) {
+		.ai-tool-card:hover .tool-card-content,
+		.ai-tool-card:focus-within .tool-card-content {
+			opacity: 0.09;
+			transform: scale(0.985);
+		}
+
+		.ai-tool-card:hover .tool-insight,
+		.ai-tool-card:focus-within .tool-insight {
+			opacity: 1;
+			visibility: visible;
+			transform: translateY(0) scale(1);
+			pointer-events: auto;
+			transition-delay: 0s;
+		}
+	}
+
+	@media (max-width: 639px) {
+		.ai-tool-card {
+			transform: none;
+		}
+
+		.tool-insight {
+			display: none;
+		}
+
+		.ai-tool-card:hover .tool-card-content,
+		.ai-tool-card:focus-within .tool-card-content {
+			opacity: 1;
+			transform: none;
+		}
+
+		.tool-touch-insight {
+			display: block;
+			margin-top: 0.35rem;
+			border-top: 1px solid color-mix(in oklch, var(--tool-color) 20%, transparent);
+		}
+
+		.tool-touch-insight summary {
+			display: flex;
+			align-items: center;
+			justify-content: space-between;
+			min-height: 2.75rem;
+			color: color-mix(in oklch, var(--tool-color) 80%, var(--content));
+			font-size: 0.76rem;
+			font-weight: 700;
+			cursor: pointer;
+			list-style: none;
+		}
+
+		.tool-touch-insight summary::-webkit-details-marker {
+			display: none;
+		}
+
+		.tool-touch-insight summary span {
+			display: inline-flex;
+			align-items: center;
+			gap: 0.35rem;
+		}
+
+		.tool-touch-insight summary iconify-icon {
+			width: 1rem;
+			height: 1rem;
+		}
+
+		.tool-touch-chevron {
+			transition: transform 160ms ease-in-out;
+		}
+
+		.tool-touch-insight[open] .tool-touch-chevron {
+			transform: rotate(180deg);
+		}
+
+		.tool-touch-body {
+			padding: 0 0 0.8rem;
+			color: color-mix(in oklch, var(--content) 72%, transparent);
+			font-size: 0.76rem;
+			line-height: 1.55;
+		}
+
+		.tool-touch-body p {
+			margin: 0;
+		}
+
+		.tool-touch-best-for {
+			display: flex;
+			align-items: flex-start;
+			gap: 0.4rem;
+			margin-top: 0.45rem !important;
+		}
+
+		.tool-touch-best-for strong {
+			flex: 0 0 auto;
+			color: color-mix(in oklch, var(--tool-color) 78%, var(--content));
+		}
 	}
 
 	.ai-tool-card.filtered-out {
@@ -173,6 +525,7 @@ const getFrequencyWidth = (frequency: string) => {
 	.ai-tool-card:nth-child(10) { animation-delay: 0.3s; }
 	.ai-tool-card:nth-child(11) { animation-delay: 0.33s; }
 	.ai-tool-card:nth-child(12) { animation-delay: 0.36s; }
+	.ai-tool-card:nth-child(n + 13) { animation-delay: 0.39s; }
 
 	.line-clamp-1 {
 		display: -webkit-box;
@@ -186,5 +539,21 @@ const getFrequencyWidth = (frequency: string) => {
 		-webkit-line-clamp: 2;
 		-webkit-box-orient: vertical;
 		overflow: hidden;
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		.ai-tool-card,
+		.tool-card-content,
+		.tool-card-wash,
+		.tool-insight,
+		.tool-insight-action iconify-icon,
+		.tool-touch-chevron {
+			animation: none;
+			transition: none;
+		}
+
+		.ai-tool-card {
+			opacity: 1;
+		}
 	}
 </style>

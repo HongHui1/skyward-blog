@@ -7,10 +7,12 @@
 
 import Image from "@components/atoms/Image/Image.astro";
 import TypewriterText from "@components/atoms/typewriter-text/TypewriterText.astro";
+import DynamicWallpaperStage from "@components/control/DynamicWallpaperStage.astro";
 import { Icon } from "astro-icon/components";
 import { siteConfig } from "../../config";
 import { BANNER_HEIGHT_EXTEND } from "../../constants/constants";
 import { getImageFormats, getImageQuality } from "../../utils/image-utils";
+import { withBase } from "../../utils/base-path";
 
 interface Props {
 	// Banner 配置
@@ -46,8 +48,13 @@ const {
 const normalizeToArray = (images: string | string[]): string[] =>
 	Array.isArray(images) ? images : [images];
 
-const desktopImages = normalizeToArray(bannerImages.desktop).filter(Boolean);
-const mobileImages = normalizeToArray(bannerImages.mobile).filter(Boolean);
+const resolveImage = (src: string): string => withBase(src);
+const desktopImages = normalizeToArray(bannerImages.desktop)
+	.filter(Boolean)
+	.map(resolveImage);
+const mobileImages = normalizeToArray(bannerImages.mobile)
+	.filter(Boolean)
+	.map(resolveImage);
 
 const isCarouselEnabled =
 	siteConfig.banner.carousel?.enable &&
@@ -166,8 +173,8 @@ const bannerFormats = getImageFormats();
 			<script
 				is:inline
 				define:vars={{
-					desktopImages: bannerImages.desktop,
-					mobileImages: bannerImages.mobile,
+					desktopImages,
+					mobileImages,
 					position: siteConfig.banner.position,
 				}}
 			>
@@ -228,6 +235,8 @@ const bannerFormats = getImageFormats();
 			</script>
 		</div>
 	)}
+
+	<DynamicWallpaperStage location="banner" />
 
 	<!-- Ken Burns 动画样式（放在 body 中，不受 Swup head 替换影响） -->
 	{isCarouselEnabled && (
@@ -608,6 +617,21 @@ const bannerFormats = getImageFormats();
 		</script>
 
 	<!-- 首页文字覆盖层 -->
+	<div
+		class="banner-contrast-overlay absolute inset-0 z-10 pointer-events-none"
+		aria-hidden="true"
+	></div>
+
+	<div class="sky-hero-stage absolute inset-0 z-10 pointer-events-none" aria-hidden="true">
+		<span class="sky-hero-stage__mark sky-hero-stage__mark--north">SKYCITY / CLOUDWARD</span>
+		<span class="sky-hero-stage__mark sky-hero-stage__mark--east">LIFE · STUDY · TRAVEL</span>
+		<svg class="sky-hero-route" viewBox="0 0 1200 600" preserveAspectRatio="none">
+			<path d="M-40 462 C 218 344, 328 506, 564 330 S 894 108, 1248 172" />
+			<circle cx="905" cy="160" r="4" />
+		</svg>
+		<span class="sky-hero-stage__chapter">A CITY ABOVE THE CLOUDS</span>
+	</div>
+
 	{siteConfig.banner.homeText?.enable && (
 		<div class={`banner-text-overlay absolute inset-0 z-20 flex items-center justify-center ${!showTextOverlay ? "hidden" : ""}`}>
 			<div class="w-4/5 lg:w-3/4 text-center mb-0">
@@ -639,6 +663,17 @@ const bannerFormats = getImageFormats();
 			</div>
 		</div>
 	)}
+
+	<a
+		href="#main-content-start"
+		class="home-scroll-cue absolute z-30 flex-col items-center gap-1 text-white/90"
+		aria-label="向下浏览首页内容"
+	>
+		<span class="home-scroll-cue__label">向下浏览</span>
+		<span class="home-scroll-cue__track" aria-hidden="true">
+			<span class="home-scroll-cue__signal"></span>
+		</span>
+	</a>
 
 	<!-- 非首页页面标题覆盖层（持久化容器，JS 动态填充文本） -->
 	<div id="banner-page-overlay" class="banner-page-overlay hidden lg:flex absolute inset-0 z-20 pointer-events-none">
@@ -752,13 +787,13 @@ const bannerFormats = getImageFormats();
 	/* Banner 文本样式 */
 	.banner-title {
 		text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7);
-		animation: fadeInUp 1s ease-out;
+		animation: fadeInUp 700ms cubic-bezier(0.16, 1, 0.3, 1) backwards;
 		font-weight: bold;
 	}
 
 	.banner-subtitle {
 		text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.6);
-		animation: fadeInUp 1s ease-out 0.3s both;
+		animation: fadeInUp 700ms cubic-bezier(0.16, 1, 0.3, 1) 140ms backwards;
 		min-height: 1.5em;
 		line-height: 1.2;
 	}
