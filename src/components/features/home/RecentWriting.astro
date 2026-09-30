@@ -42,14 +42,16 @@ const travelCover = url("/images/albums/nanjing/cover.jpg");
 
 <section
 	id="sky-journal"
-	class="home-writing card-base onload-animation"
+	class="home-writing onload-animation"
 	aria-labelledby="home-writing-title"
 >
 	<header class="home-writing-header">
-		<div>
-			<h2 id="home-writing-title">最近写下</h2>
+		<div class="ew-head home-writing-head">
+			<div class="ew-title-wrap">
+				<h2 id="home-writing-title">最近写下</h2>
+			</div>
 			<p class="home-writing-intro">
-				从生活、学习和旅途中，收集 SkyCity 的第一批坐标。
+				一些路上的风景，和正在发生的小事。
 			</p>
 		</div>
 		<a class="archive-link" href={archiveHref} aria-label="查看文章归档">
@@ -172,7 +174,7 @@ const travelCover = url("/images/albums/nanjing/cover.jpg");
 <style>
 	.home-writing {
 		margin-bottom: 1rem;
-		padding: 1.25rem;
+		padding: 0;
 	}
 
 	.home-writing-header {
@@ -181,6 +183,23 @@ const travelCover = url("/images/albums/nanjing/cover.jpg");
 		justify-content: space-between;
 		gap: 1.5rem;
 		padding: 0.25rem 0.25rem 1.1rem;
+	}
+
+	.home-writing-head {
+		flex: 1;
+		min-width: 0;
+		flex-wrap: wrap;
+		align-items: flex-start;
+		flex-direction: column;
+		row-gap: 0.45rem;
+	}
+
+	.home-writing-intro {
+		margin: .35rem 0 0;
+		padding-left: 0;
+		color: var(--content-meta);
+		font-size: 0.92rem;
+		white-space: normal;
 	}
 
 	.home-writing h2 {
@@ -192,7 +211,6 @@ const travelCover = url("/images/albums/nanjing/cover.jpg");
 	}
 
 	.home-writing-intro {
-		margin: 0.45rem 0 0;
 		color: rgb(0 0 0 / 0.5);
 		font-size: 0.92rem;
 	}
@@ -300,8 +318,10 @@ const travelCover = url("/images/albums/nanjing/cover.jpg");
 	.travel-content {
 		display: flex;
 		width: 100%;
+		min-height: 26rem;
 		flex-direction: column;
 		justify-content: space-between;
+		gap: 1.6rem;
 	}
 
 	.direction-card-text {

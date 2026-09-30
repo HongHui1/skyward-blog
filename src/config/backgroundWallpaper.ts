@@ -4,10 +4,10 @@ export const fullscreenWallpaperConfig: FullscreenWallpaperConfig = {
 	enable: true,
 	src: {
 		desktop: [
-			"/assets/wallpaper/denia-summer-dream-desktop.webp",
+			"/assets/wallpaper/noa-falling-blossoms-poster.webp",
 		],
 		mobile: [
-			"/assets/wallpaper/denia-summer-dream-mobile.webp",
+			"/assets/wallpaper/noa-falling-blossoms-mobile.webp",
 		],
 	},
 	position: "center",

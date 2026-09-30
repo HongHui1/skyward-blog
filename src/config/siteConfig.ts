@@ -36,7 +36,7 @@ export const siteConfig: SiteConfig = {
 		// 顶栏标题文本
 		text: "SkyCity",
 		// 顶栏标题图标路径，默认使用 public/assets/home/home.webp
-		icon: "assets/home/home.webp",
+		icon: "assets/home/skycity-mark.svg",
 		// 网站Logo图片路径
 		logo: "assets/home/default-logo.webp",
 	},
@@ -106,13 +106,13 @@ export const siteConfig: SiteConfig = {
 	},
 
 	banner: {
-		// 首页只保留一张壁纸，桌面与手机分别使用对应裁切版本
+		// 默认壁纸与场景切换器默认场景保持一致：「落花吟」生盐诺亚
 		src: {
 			desktop: [
-				"/assets/wallpaper/denia-summer-dream-desktop.webp",
+				"/assets/wallpaper/noa-falling-blossoms-poster.webp",
 			], // 桌面横幅图片
 			mobile: [
-				"/assets/wallpaper/denia-summer-dream-mobile.webp",
+				"/assets/wallpaper/noa-falling-blossoms-mobile.webp",
 			], // 移动横幅图片
 		}, // 使用本地横幅图片
 
@@ -162,8 +162,8 @@ export const siteConfig: SiteConfig = {
 		credit: {
 			enable: true, // 显示横幅图片来源文本
 
-			text: "鸣潮 · 达妮娅「沉睡的夏日梦」/ 小无名罢了", // 要显示的来源文本
-			url: "https://steamcommunity.com/sharedfiles/filedetails/?id=3738374514", // 创意工坊来源
+			text: "蔚蓝档案 · 生盐诺亚「落花吟」/ 夜莺Night", // 要显示的来源文本
+			url: "https://steamcommunity.com/sharedfiles/filedetails/?id=3723257973", // 创意工坊来源
 		},
 
 		navbar: {

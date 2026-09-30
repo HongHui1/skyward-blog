@@ -21,6 +21,9 @@ import "../styles/wallpaper-navbar-transparent.css";
 import "../styles/fancybox-custom.css";
 import "../styles/expressive-code.css";
 import "../styles/panel-animations.css";
+import "../styles/genesis.css";
+import "../styles/genesis-redesign.css";
+import "../styles/atmosphere.css";
 
 // 导入新提取的 Head 组件
 import AnalyticsScripts from "./partials/AnalyticsScripts.astro";
@@ -154,6 +157,8 @@ const bannerOffset =
 		<Font cssVariable="--font-body" preload />
 		<Font cssVariable="--font-cjk" />
 		<Font cssVariable="--font-jetbrains-mono" />
+		<Font cssVariable="--font-display" preload />
+		<Font cssVariable="--font-pixel" />
 
 		<script is:inline>
 			(function() {
@@ -217,6 +222,14 @@ const bannerOffset =
 
 		data-overlayscrollbars-initialize
 	>
+		<!--
+		THESIS: SkyCity opens through an inhabited scene and lets real travel photographs lead into personal writing.
+		OWN-WORLD: Existing blue-and-lilac scenes, white reading surfaces, clear display type, photographic contact sheets.
+		STORY: Choose a sky, read a journal, browse Nanjing, follow an article or useful link.
+		FIRST VIEWPORT: Full-screen moving wallpaper; lower-left title and reading action; three tactile scene previews at right; visible author credit.
+		FORM: Scene screen with a photographic contact sheet, grounded structure 5, seed 1c081664. Code-led extension of the existing visual world.
+		FINISH: unreviewed and undocumented is unfinished; this build ends with the finish review, the verdict, and DESIGN.md
+		-->
 		<noscript
 			><iframe
 				src="https://www.googletagmanager.com/ns.html?id=GTM-KRX3XGVH"
@@ -224,6 +237,15 @@ const bannerOffset =
 				width="0"
 				style="display:none;visibility:hidden"></iframe></noscript
 		>
+		<!-- Genesis：暗色星幕背景层（位于页面背景之上、内容之下） -->
+		<div id="sky-starfield" aria-hidden="true">
+			<i class="sky-meteor"></i>
+			<i class="sky-meteor sky-meteor--b"></i>
+		</div>
+		<!-- Genesis：光标点（粒子光迹见 genesis-interactions） -->
+		<div id="genesis-cursor-dot" aria-hidden="true"></div>
+		<!-- Genesis：真实滚动进度 hairline -->
+		<div id="genesis-progress" aria-hidden="true"></div>
 		<!-- 页面顶部渐变高光效果 - 只在full和semifull模式下显示 -->
 		{shouldShowTopHighlight && <div class="top-gradient-highlight" />}
 
@@ -320,10 +342,14 @@ const bannerOffset =
 	// 所有功能已重构为模块化架构，详见 src/scripts/ 目录
 	import { initMotionSystem } from "../scripts/motion-system";
 	import { initSwupManager } from "../scripts/swup-manager";
+	import { initGenesisInteractions } from "../scripts/genesis-interactions";
 
 	// 先建立 motion 单例，再注册 Swup 钩子，避免极快导航时丢失首个生命周期事件。
 	initMotionSystem();
 	initSwupManager();
+
+	// Genesis 交互升级层：光标光晕 / 卡片聚光 / 磁吸 / 涟漪 / 级联入场
+	initGenesisInteractions();
 </script>
 
 <!-- 基于 Mizuki 原有交互，为超过阈值的代码块自动启用折叠 -->

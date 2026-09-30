@@ -49,33 +49,50 @@ import { remarkPlantuml } from "./src/plugins/remark-plantuml.mjs";
 import { remarkWikiLink } from "./src/plugins/remark-wiki-link.mjs";
 
 // https://astro.build/config
-export default defineConfig({
-	fonts: [
-		{
-			name: "JetBrains Mono",
-			cssVariable: "--font-jetbrains-mono",
-			provider: fontProviders.fontsource(),
-			styles: ["normal", "italic"],
-		},
-		{
-			name: "ZenMaruGothic-Medium",
-			cssVariable: "--font-body",
-			provider: fontProviders.local(),
-			options: {
-				variants: [
-					{
-						src: ["./src/assets/fonts/ZenMaruGothic-Medium.ttf"],
-						weight: "500",
-						style: "normal",
-					},
-				],
+	export default defineConfig({
+		fonts: [
+			{
+				name: "JetBrains Mono",
+				cssVariable: "--font-jetbrains-mono",
+				provider: fontProviders.fontsource(),
+				styles: ["normal", "italic"],
 			},
-			// These variables are composed into --font-sans below. Keep their
-			// fallback lists empty; otherwise a system fallback after this Latin
-			// font prevents the following CJK font from ever being considered.
-			fallbacks: [],
-			optimizedFallbacks: false,
-		},
+			{
+				// Genesis 设计系统显示字体：用于 Latin 大标题 / 编号 / 日期
+				name: "Space Grotesk",
+				cssVariable: "--font-display",
+				provider: fontProviders.fontsource(),
+				weights: [500, 700],
+				// 中文回落到正文字体栈，见各处 font-family 组合
+				fallbacks: [],
+			},
+			{
+				// 页脚像素 arcade 大字专用
+				name: "Press Start 2P",
+				cssVariable: "--font-pixel",
+				provider: fontProviders.fontsource(),
+				weights: [400],
+				fallbacks: [],
+			},
+			{
+				name: "ZenMaruGothic-Medium",
+				cssVariable: "--font-body",
+				provider: fontProviders.local(),
+				options: {
+					variants: [
+						{
+							src: ["./src/assets/fonts/ZenMaruGothic-Medium.ttf"],
+							weight: "500",
+							style: "normal",
+						},
+					],
+				},
+				// These variables are composed into --font-sans below. Keep their
+				// fallback lists empty; otherwise a system fallback after this Latin
+				// font prevents the following CJK font from ever being considered.
+				fallbacks: [],
+				optimizedFallbacks: false,
+			},
 		{
 			name: "Loli",
 			cssVariable: "--font-cjk",

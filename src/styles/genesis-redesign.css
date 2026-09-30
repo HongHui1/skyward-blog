@@ -1,0 +1,543 @@
+/* ==========================================================================
+   SkyCity · Genesis v2 设计重构层
+   编辑级排版 / 大气氛围 / 跑马灯 / 声明式页脚 / 组件精修
+   依赖 Layout 提供的固定层：#sky-grain / #genesis-cursor-dot
+   依赖 astro.config.mjs 提供的 --font-display（Space Grotesk）
+   ========================================================================== */
+
+:root {
+	--genesis-font-display: var(--font-display), var(--font-body), var(--font-cjk),
+		sans-serif;
+	--genesis-scroll-progress: 0;
+	/* 大气层滚动视差偏移，由脚本写入 */
+	--sky-atmo-y: 0px;
+}
+
+/* --------------------------------------------------------------------------
+   1. 全局噪点颗粒：premium 质感的 film grain
+   -------------------------------------------------------------------------- */
+
+#sky-grain {
+	position: fixed;
+	inset: -50%;
+	z-index: 70;
+	pointer-events: none;
+	opacity: 0.05;
+	background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.72' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+	background-size: 256px 256px;
+	animation: genesis-grain-shift 0.9s steps(4) infinite;
+}
+
+:root.dark #sky-grain {
+	opacity: 0.07;
+}
+
+@keyframes genesis-grain-shift {
+	0% { transform: translate3d(0, 0, 0); }
+	25% { transform: translate3d(-2%, 1.4%, 0); }
+	50% { transform: translate3d(1.6%, -1.2%, 0); }
+	75% { transform: translate3d(-1.2%, -1.8%, 0); }
+	100% { transform: translate3d(1.4%, 1.6%, 0); }
+}
+
+/* --------------------------------------------------------------------------
+   2. 大气层：浅色云雾 / 暗色流星 / 滚动视差
+   -------------------------------------------------------------------------- */
+
+/* 浅色模式：柔和的日光云雾（替代星点，同样有沉浸感） */
+:root:not(.dark) #sky-starfield {
+	opacity: 1;
+	background: none;
+	animation: none;
+}
+
+:root:not(.dark) #sky-starfield::before {
+	content: "";
+	position: absolute;
+	inset: -20%;
+	background:
+		radial-gradient(
+			46rem 32rem at 14% 8%,
+			color-mix(in oklch, var(--primary) 10%, transparent),
+			transparent 68%
+		),
+		radial-gradient(
+			38rem 28rem at 86% 18%,
+			oklch(0.75 0.08 calc(var(--hue) + 80) / 0.09),
+			transparent 70%
+		),
+		radial-gradient(
+			52rem 36rem at 50% 100%,
+			oklch(0.8 0.06 calc(var(--hue) - 70) / 0.1),
+			transparent 72%
+		);
+	filter: blur(10px);
+	animation: genesis-aurora-breathe 30s ease-in-out infinite alternate;
+}
+
+:root:not(.dark) #sky-starfield::after {
+	content: none;
+}
+
+/* 暗色模式：极光随滚动轻移（视差） */
+:root.dark #sky-starfield::before {
+	transform: translate3d(0, var(--sky-atmo-y), 0);
+}
+
+/* 流星：暗色模式下偶发划过 */
+#sky-starfield .sky-meteor {
+	position: absolute;
+	top: 12%;
+	left: 62%;
+	width: 9rem;
+	height: 1px;
+	background: linear-gradient(
+		90deg,
+		transparent,
+		rgb(255 255 255 / 0.85) 55%,
+		transparent
+	);
+	transform: rotate(28deg) translate3d(-30vw, -18vh, 0);
+	opacity: 0;
+	animation: genesis-meteor 13s ease-in 4s infinite;
+}
+
+#sky-starfield .sky-meteor--b {
+	top: 4%;
+	left: 24%;
+	width: 6.5rem;
+	animation-duration: 17s;
+	animation-delay: 9.5s;
+}
+
+:root:not(.dark) #sky-starfield .sky-meteor {
+	display: none;
+}
+
+@keyframes genesis-meteor {
+	0% {
+		opacity: 0;
+		transform: rotate(28deg) translate3d(-30vw, -18vh, 0);
+	}
+	3% {
+		opacity: 0.9;
+	}
+	9% {
+		opacity: 0;
+		transform: rotate(28deg) translate3d(38vw, 23vh, 0);
+	}
+	100% {
+		opacity: 0;
+		transform: rotate(28deg) translate3d(38vw, 23vh, 0);
+	}
+}
+
+/* --------------------------------------------------------------------------
+   3. 光标：小圆点（即时跟随）+ 粒子光迹
+   -------------------------------------------------------------------------- */
+
+#genesis-cursor-dot {
+	position: fixed;
+	top: 0;
+	left: 0;
+	z-index: 81;
+	width: 6px;
+	height: 6px;
+	margin: -3px 0 0 -3px;
+	border-radius: 999px;
+	pointer-events: none;
+	opacity: 0;
+	background: var(--primary);
+	will-change: transform;
+	transition: opacity 0.25s ease, transform 0.15s ease;
+}
+
+/* 按下：收缩反馈 */
+#genesis-cursor-dot[data-pressed="true"] {
+	transform: scale(0.55);
+}
+
+/* --------------------------------------------------------------------------
+   4. 排版系统：显示字体工具类 + 编辑式节标题
+   -------------------------------------------------------------------------- */
+
+.ew-head {
+	display: flex;
+	align-items: baseline;
+	gap: 0.9rem;
+}
+
+.ew-index {
+	color: transparent;
+	font-family: var(--genesis-font-display);
+	font-size: clamp(2.2rem, 4vw, 3rem);
+	font-weight: 700;
+	line-height: 1;
+	letter-spacing: -0.04em;
+	background-image: linear-gradient(
+		165deg,
+		var(--primary),
+		oklch(0.72 0.12 calc(var(--hue) + 60))
+	);
+	-webkit-background-clip: text;
+	background-clip: text;
+}
+
+.ew-title-wrap {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: baseline;
+	gap: 0.7rem;
+}
+
+.ew-title-wrap h2 {
+	margin: 0;
+	font-size: clamp(1.6rem, 3vw, 2.15rem);
+	font-weight: 800;
+	line-height: 1.15;
+	letter-spacing: -0.02em;
+	color: rgb(0 0 0 / 0.9);
+}
+
+:global(:root.dark) .ew-title-wrap h2 {
+	color: rgb(255 255 255 / 0.9);
+}
+
+/* Latin 副标（display 字体 + 宽字距） */
+.ew-en {
+	color: rgb(0 0 0 / 0.32);
+	font-family: var(--genesis-font-display);
+	font-size: 0.78rem;
+	font-weight: 700;
+	letter-spacing: 0.34em;
+	text-transform: uppercase;
+	font-style: normal;
+	white-space: nowrap;
+}
+
+:global(:root.dark) .ew-en {
+	color: rgb(255 255 255 / 0.34);
+}
+
+/* 首页「文章坐标」节标题 */
+.sky-archive-head {
+	padding: 0.9rem 0.35rem 0.85rem;
+}
+
+/* --------------------------------------------------------------------------
+   5. 跑马灯条：Banner 与内容之间的氛围接缝
+   -------------------------------------------------------------------------- */
+
+.sky-marquee {
+	position: relative;
+	margin-bottom: 0.85rem;
+	border: 1px solid color-mix(in oklch, var(--primary) 18%, var(--line-divider));
+	border-radius: calc(var(--radius-large) - 0.15rem);
+	background:
+		linear-gradient(
+			100deg,
+			color-mix(in oklch, var(--primary) 12%, var(--card-bg)),
+			color-mix(in oklch, var(--primary) 5%, var(--card-bg)) 55%,
+			color-mix(in oklch, var(--primary) 14%, var(--card-bg))
+		);
+	overflow: hidden;
+}
+
+.sky-marquee::before,
+.sky-marquee::after {
+	content: "";
+	position: absolute;
+	top: 0;
+	bottom: 0;
+	width: 3.5rem;
+	z-index: 1;
+	pointer-events: none;
+}
+
+.sky-marquee::before {
+	left: 0;
+	background: linear-gradient(90deg, var(--card-bg), transparent);
+}
+
+.sky-marquee::after {
+	right: 0;
+	background: linear-gradient(-90deg, var(--card-bg), transparent);
+}
+
+.sky-marquee__track {
+	display: flex;
+	width: max-content;
+	padding: 0.85rem 0;
+	animation: genesis-marquee 36s linear infinite;
+}
+
+.sky-marquee:hover .sky-marquee__track {
+	animation-play-state: paused;
+}
+
+.sky-marquee__item {
+	display: inline-flex;
+	align-items: center;
+	gap: 1.4rem;
+	padding-right: 1.4rem;
+	color: color-mix(in oklch, var(--primary) 55%, var(--deep-text));
+	font-family: var(--genesis-font-display);
+	font-size: 0.86rem;
+	font-weight: 700;
+	letter-spacing: 0.22em;
+	text-transform: uppercase;
+	white-space: nowrap;
+}
+
+.sky-marquee__item i {
+	width: 5px;
+	height: 5px;
+	border-radius: 999px;
+	background: color-mix(in oklch, var(--primary) 70%, transparent);
+	font-style: normal;
+}
+
+@keyframes genesis-marquee {
+	to {
+		transform: translate3d(-50%, 0, 0);
+	}
+}
+
+/* --------------------------------------------------------------------------
+   6. 页脚容器（像素签名由 PixelSignature 组件管理）
+   -------------------------------------------------------------------------- */
+
+.sky-footer {
+	position: relative;
+	overflow: hidden;
+}
+
+/* --------------------------------------------------------------------------
+   7. 组件精修
+   -------------------------------------------------------------------------- */
+
+/* 主操作按钮：微渐变 + hover 扫光 */
+.btn-regular {
+	background-image: linear-gradient(
+		145deg,
+		color-mix(in oklch, white 22%, var(--btn-regular-bg)),
+		var(--btn-regular-bg) 55%,
+		color-mix(in oklch, var(--btn-regular-bg-hover) 34%, var(--btn-regular-bg))
+	);
+	box-shadow: inset 0 1px 0 color-mix(in oklch, white 45%, transparent);
+}
+
+:root.dark .btn-regular {
+	box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.08);
+}
+
+/* 返回顶部进度环（dock 按钮 / 兼容独立 BackToTop） */
+.sky-dock__top,
+#back-to-top-btn {
+	--ring-color: color-mix(in oklch, var(--primary) 80%, transparent);
+}
+
+.sky-dock__top .genesis-ring,
+#back-to-top-btn .genesis-ring {
+	position: absolute;
+	inset: 2px;
+	z-index: 1;
+	width: auto;
+	height: auto;
+	pointer-events: none;
+}
+
+.sky-dock__top .genesis-ring circle,
+#back-to-top-btn .genesis-ring circle {
+	fill: none;
+	stroke: var(--ring-color);
+	stroke-width: 2;
+	stroke-linecap: round;
+	stroke-dasharray: 100;
+	stroke-dashoffset: calc(
+		100 - var(--genesis-scroll-progress, 0) * 100
+	);
+	transform: rotate(-90deg);
+	transform-origin: center;
+}
+
+/* 导航栏滚动后：底部渐变 hairline */
+#navbar.scrolled > div:first-child,
+#navbar.scrolled > div:not(.absolute) {
+	position: relative;
+}
+
+#navbar.scrolled > div::after {
+	content: "";
+	position: absolute;
+	bottom: 0;
+	left: 10%;
+	right: 10%;
+	height: 1px;
+	background: linear-gradient(
+		90deg,
+		transparent,
+		color-mix(in oklch, var(--primary) 55%, transparent) 50%,
+		transparent
+	);
+	opacity: 0.75;
+	pointer-events: none;
+}
+
+/* Hero 光标追光：横幅内跟随鼠标的柔和天光 */
+html[data-sky-motion="full"] body.enable-banner .banner-contrast-overlay::before {
+	content: "";
+	position: absolute;
+	inset: 0;
+	z-index: 1;
+	pointer-events: none;
+	background: radial-gradient(
+		30rem circle at var(--genesis-hero-lx, 50%) var(--genesis-hero-ly, 42%),
+		rgb(255 255 255 / 0.14),
+		color-mix(in oklch, var(--primary) 8%, transparent) 38%,
+		transparent 68%
+	);
+	opacity: 0;
+	transition: opacity 0.5s ease;
+}
+
+html[data-sky-motion="full"] body.enable-banner #banner-wrapper:hover .banner-contrast-overlay::before {
+	opacity: 1;
+}
+
+/* --------------------------------------------------------------------------
+   8. 交互升级包：滚动进度 / dock 放大 / 逐字标题 / 秘技提示
+   -------------------------------------------------------------------------- */
+
+/* 真实滚动进度 hairline（区别于主题的加载进度条） */
+#genesis-progress {
+	position: fixed;
+	top: 0;
+	left: 0;
+	z-index: 82;
+	width: 100%;
+	height: 2px;
+	pointer-events: none;
+	background: linear-gradient(
+		90deg,
+		var(--primary),
+		oklch(0.75 0.16 calc(var(--hue) + 60)),
+		oklch(0.8 0.18 calc(var(--hue) + 130))
+	);
+	transform-origin: 0 50%;
+	transform: scaleX(var(--genesis-scroll-progress, 0));
+	opacity: 0.85;
+}
+
+/* dock 图标魔力放大 */
+.sky-dock--desktop .sky-dock__action {
+	transform-origin: 50% 50%;
+	transition: transform 0.18s ease-out;
+	will-change: transform;
+}
+
+/* 节标题逐字点亮 */
+.ew-char {
+	display: inline-block;
+	opacity: 0;
+	transform: translate3d(0, 0.55em, 0) rotate(5deg) scale(0.9);
+	transition:
+		opacity 0.45s var(--genesis-ease),
+		transform 0.55s var(--genesis-ease);
+	transition-delay: calc(var(--ci, 0) * 42ms);
+	will-change: transform, opacity;
+}
+
+.ew-lit .ew-char {
+	opacity: 1;
+	transform: translate3d(0, 0, 0) rotate(0deg) scale(1);
+}
+
+/* Konami 秘技提示条 */
+#genesis-toast {
+	position: fixed;
+	bottom: 5.2rem;
+	left: 50%;
+	z-index: 92;
+	padding: 0.85rem 1.4rem;
+	border: 2px solid color-mix(in oklch, var(--primary) 70%, transparent);
+	border-radius: 0.6rem;
+	background: color-mix(in oklch, var(--card-bg) 88%, transparent);
+	backdrop-filter: blur(8px);
+	color: var(--primary);
+	font-family: var(--font-pixel), var(--font-display), monospace;
+	font-size: 0.85rem;
+	letter-spacing: 0.12em;
+	white-space: nowrap;
+	box-shadow:
+		0 0 0 4px color-mix(in oklch, var(--primary) 12%, transparent),
+		0 12px 32px -8px rgb(0 0 0 / 0.35);
+	opacity: 0;
+	pointer-events: none;
+	transform: translate3d(-50%, 0.6rem, 0);
+	transition:
+		opacity 0.25s ease,
+		transform 0.35s var(--genesis-ease);
+}
+
+#genesis-toast[data-show="true"] {
+	opacity: 1;
+	transform: translate3d(-50%, 0, 0);
+	animation: genesis-toast-blink 0.5s steps(2) 3;
+}
+
+@keyframes genesis-toast-blink {
+	50% { opacity: 0.35; }
+}
+
+/* --------------------------------------------------------------------------
+   9. 降级与可达性
+   -------------------------------------------------------------------------- */
+
+@media (prefers-reduced-motion: reduce) {
+	#sky-grain {
+		animation: none;
+	}
+
+	#sky-starfield .sky-meteor {
+		display: none;
+	}
+
+	.sky-marquee__track {
+		animation: none;
+	}
+
+	.ew-char {
+		opacity: 1;
+		transform: none;
+		transition: none;
+	}
+
+	#genesis-toast {
+		animation: none;
+	}
+
+	/* 封面倾斜与 Hero 追光属于纯动效，直接停用 */
+	.card-base a[data-sky-shared-cover] img {
+		transform: none !important;
+	}
+
+	.banner-contrast-overlay::before {
+		display: none;
+	}
+
+	.enable-card-border .card-base:active {
+		transform: none;
+	}
+
+	#genesis-cursor-dot {
+		display: none;
+	}
+
+}
+
+@media (hover: none), (pointer: coarse) {
+	#genesis-cursor-dot {
+		display: none;
+	}
+}

@@ -10,6 +10,7 @@
  * siteConfig                    │ siteConfig.ts              │ 站点核心配置（标题、语言、主题色、横幅、字体、特色页面开关等）
  * SITE_LANG                     │ siteConfig.ts              │ 站点语言常量（从 siteConfig 中导出）
  * fullscreenWallpaperConfig     │ backgroundWallpaper.ts     │ 全屏壁纸模式配置（图片源、轮播、透明度、模糊）
+ * interactionConfig             │ interactionConfig.ts       │ Genesis 交互升级（光标光晕、磁吸、涟漪、星幕等）
  * navBarConfig                  │ navBarConfig.ts            │ 导航栏菜单配置（链接、多级下拉菜单）
  * profileConfig                 │ profileConfig.ts           │ 个人资料（头像、昵称、简介、社交链接）
  * licenseConfig                 │ licenseConfig.ts           │ 文章许可协议（CC 协议名称和链接）
@@ -56,6 +57,7 @@ export { announcementConfig } from "./announcementConfig";
 export { fullscreenWallpaperConfig } from "./backgroundWallpaper";
 // ─── 互动功能 ───────────────────────────────────────────────
 export { commentConfig } from "./commentConfig";
+export { interactionConfig } from "./interactionConfig";
 export { sakuraConfig } from "./effectsConfig";
 // ─── 代码块 ─────────────────────────────────────────────────
 export { expressiveCodeConfig } from "./expressiveCodeConfig";

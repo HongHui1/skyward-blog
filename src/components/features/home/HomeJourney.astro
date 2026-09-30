@@ -1,0 +1,70 @@
+---
+import type { CollectionEntry } from "astro:content";
+import { Image } from "astro:assets";
+import { Icon } from "astro-icon/components";
+import avatar from "@/assets/images/cloudward-avatar.jpg";
+import { getDiaryList } from "@/data/diary";
+import { getPostUrl, url } from "@/utils/url-utils";
+import TravelWindow from "./TravelWindow.astro";
+import "../../../styles/home-journey.css";
+
+interface Props { posts: CollectionEntry<"posts">[] }
+const { posts } = Astro.props;
+const study = posts.find((post) => post.id.replace(/\.(md|mdx|markdown)$/i, "") === "learning-foundations") ?? posts[0];
+const diary = getDiaryList(1)[0];
+const date = (value: Date | string) => new Intl.DateTimeFormat("zh-CN", { year: "numeric", month: "2-digit", day: "2-digit", timeZone: "Asia/Shanghai" }).format(new Date(value)).replaceAll("/", ".");
+---
+
+<sky-home-journey>
+	<section class="journey-intro" aria-labelledby="journey-intro-title">
+		<div class="journey-intro__copy">
+			<p class="journey-eyebrow"><span class="journey-dot" aria-hidden="true"></span> CLOUDWARD'S PERSONAL JOURNAL</p>
+			<h2 id="journey-intro-title">把日子写成故事，<br /><span>把好奇留给世界。</span></h2>
+			<p class="journey-intro__description">关于学习，关于远方，<br />也关于那些不必急着赶路的日常。</p>
+			<a class="journey-author" href={url("/about/")}>
+				<Image src={avatar} alt="" width={48} height={48} loading="lazy" />
+				<span><strong>你好，我是 cloudward</strong><small>认识一下</small></span>
+				<Icon name="material-symbols:arrow-outward-rounded" />
+			</a>
+		</div>
+		<div class="journey-postcards" aria-label="南京旅行片段">
+			<figure class="journey-postcard journey-postcard--back"><img src={url("/images/albums/nanjing/14.webp")} alt="从南京城墙望向老城与天空" width="540" height="400" loading="lazy" decoding="async" /><figcaption>南京 · 城墙上的风</figcaption></figure>
+			<figure class="journey-postcard journey-postcard--front"><img src={url("/images/albums/nanjing/10.webp")} alt="停留在台阶上的黑白猫" width="320" height="400" loading="lazy" decoding="async" /><figcaption>路上遇见的小小日常</figcaption></figure>
+			<span class="journey-postcards__note" aria-hidden="true">a few moments, kept.</span>
+		</div>
+	</section>
+
+	<section id="sky-journal" class="journey-writing" aria-labelledby="journey-writing-title">
+		<header class="journey-section-head"><div><p class="journey-eyebrow">01 / WORDS & THOUGHTS</p><h2 id="journey-writing-title">最近，写下。</h2></div><a class="journey-link" href={url("/archive/")}>所有文章 <Icon name="material-symbols:arrow-outward-rounded" /></a></header>
+		<div class="journey-writing__grid">
+			{study && <a class="journey-feature" href={getPostUrl(study)} data-sky-shared-card data-sky-shared-href={getPostUrl(study)}>
+				<div class="journey-feature__meta"><span>{study.data.category}</span><time datetime={study.data.published.toISOString()}>{date(study.data.published)}</time></div>
+				<div class="journey-feature__mark" aria-hidden="true"><span>hello, world<span class="journey-code-dot">.</span></span><span class="journey-feature__line"></span><small>C / JAVA / RUST / SOFTWARE</small></div>
+				<h3 data-sky-shared-title>{study.data.title}</h3>
+				<p>{study.data.description}</p>
+				<span class="journey-link">翻开这篇札记 <Icon name="material-symbols:arrow-forward-rounded" /></span>
+			</a>}
+			{diary && <article class="journey-diary">
+				<p class="journey-eyebrow">生活的切片 / 随笔</p>
+				<blockquote>天空蓝得透彻，<br />云白得纯粹。</blockquote>
+				<div class="journey-diary__body"><time datetime={diary.date}>{date(diary.date)}</time><h3>{diary.title}</h3><p>{diary.content.split("\n\n")[0]}</p></div>
+				<a class="journey-link" href={url("/diary/")}>读这一段夏天 <Icon name="material-symbols:arrow-forward-rounded" /></a>
+			</article>}
+		</div>
+	</section>
+
+	<section class="journey-travel" aria-label="南京旅行影像">
+		<div class="journey-travel__intro"><p class="journey-eyebrow">02 / SOMEWHERE, SLOWLY</p><p class="journey-travel__display" aria-hidden="true">走远一点。<br /><span>再慢一点。</span></p><p class="journey-travel__description">从梧桐树影，到秦淮灯火。<br />用脚步认识一座城，<br />用照片留住一些舍不得的瞬间。</p><a class="journey-link" href={url("/albums/nanjing/")}>南京 · 旅行手记 <Icon name="material-symbols:arrow-outward-rounded" /></a><span class="journey-travel__stamp" aria-hidden="true">NANJING<br /><b>2026</b><span>JANUARY</span></span></div>
+		<TravelWindow />
+	</section>
+
+	<section id="sky-archive" class="journey-archive" aria-labelledby="journey-archive-title">
+		<header class="journey-section-head"><div><p class="journey-eyebrow">03 / THE INDEX</p><h2 id="journey-archive-title">所有写下的，都在这里。</h2></div><a class="journey-link" href={url("/archive/")}>文章归档 <Icon name="material-symbols:arrow-outward-rounded" /></a></header>
+		<div class="journey-index">{posts.map((post, index) => <a class="journey-index__row" href={getPostUrl(post)}><span class="journey-index__number" aria-hidden="true">{String(index + 1).padStart(2, "0")}</span><time datetime={post.data.published.toISOString()}>{date(post.data.published)}</time><h3>{post.data.title}</h3><span class="journey-index__category">{post.data.category}</span><Icon name="material-symbols:arrow-outward-rounded" /></a>)}</div>
+		<div class="journey-endnote"><span>故事还在继续，慢慢写，也慢慢走。</span><a class="journey-link" href={url("/about/")}>关于这个小站 <Icon name="material-symbols:arrow-outward-rounded" /></a></div>
+	</section>
+</sky-home-journey>
+
+<script>
+	import "@/scripts/home-journey";
+</script>

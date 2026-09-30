@@ -2,6 +2,7 @@
 import {
 	expressiveCodeConfig,
 	fullscreenWallpaperConfig,
+	interactionConfig,
 	sakuraConfig,
 	siteConfig,
 } from "@/config";
@@ -32,6 +33,13 @@ import {
 	data-waves-enabled={siteConfig.banner?.waves?.enable ? "true" : "false"}
 	data-banner-title-enabled={siteConfig.banner?.homeText?.enable ? "true" : "false"}
 	data-banner-carousel-enabled={siteConfig.banner?.carousel?.enable ? "true" : "false"}
+	data-genesis-enabled={interactionConfig.enable ? "true" : "false"}
+	data-genesis-cursor-aura={interactionConfig.cursorAura ? "true" : "false"}
+	data-genesis-spotlight={interactionConfig.cardSpotlight ? "true" : "false"}
+	data-genesis-magnetic={interactionConfig.magneticButtons ? "true" : "false"}
+	data-genesis-ripple={interactionConfig.ripple ? "true" : "false"}
+	data-genesis-starfield={interactionConfig.starfield ? "true" : "false"}
+	data-genesis-cascade={interactionConfig.cascadeReveal ? "true" : "false"}
 >
 </div>
 

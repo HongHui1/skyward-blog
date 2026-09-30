@@ -1,0 +1,63 @@
+/* SkyCity · an opening scene, followed by places and words worth keeping. */
+:root {
+	--sky-ink: var(--deep-text);
+}
+:root.dark {
+	--sky-ink: rgb(255 255 255 / .9);
+}
+
+/* The film stage owns the image. Its controls remain legible on all three scenes. */
+html[data-sky-page="home"] #banner-wrapper .banner-contrast-overlay {
+	background: linear-gradient(180deg, rgb(13 23 41 / .13) 0%, transparent 28%, rgb(11 22 42 / .18) 46%, rgb(10 21 40 / .64) 100%), linear-gradient(90deg, rgb(10 24 45 / .3), transparent 75%);
+}
+html[data-sky-page="home"] #banner-wrapper .sky-hero-stage { display: none; }
+html[data-sky-page="home"] #main-grid > #banner-credit { display: none; }
+html[data-sky-page="home"] .home-scroll-cue { opacity: .85; }
+html[data-sky-page="home"] #banner-wrapper .waves { opacity: .35; }
+
+.sky-welcome { display: flex; align-items: center; justify-content: space-between; gap: 1.5rem; padding: .4rem .25rem 1.6rem; }
+.sky-welcome p { margin: 0; color: var(--sky-ink); font-size: 1rem; line-height: 1.8; }
+.sky-welcome strong { font-family: var(--font-display), sans-serif; font-weight: 700; }
+.sky-welcome p > span { color: var(--content-meta); font-size: .8rem; }
+.sky-welcome > a { display: inline-flex; align-items: center; gap: .8rem; min-height: 44px; white-space: nowrap; color: var(--sky-ink); font-size: .8rem; }
+.sky-welcome > a:hover { color: var(--primary); }
+.sky-welcome > a:focus-visible { outline: 2px solid var(--primary); outline-offset: 5px; border-radius: 4px; }
+
+html[data-sky-page="home"] .sky-marquee { margin-bottom: 2.2rem; background: transparent; border-inline: 0; border-radius: 0; border-color: var(--line-divider); }
+html[data-sky-page="home"] .sky-marquee__track { padding-block: .75rem; }
+html[data-sky-page="home"] .sky-marquee__item { font-size: .68rem; letter-spacing: .12em; color: var(--content-meta); gap: 1.1rem; }
+html[data-sky-page="home"] .sky-marquee::before { background: linear-gradient(90deg, var(--page-bg), transparent); }
+html[data-sky-page="home"] .sky-marquee::after { background: linear-gradient(-90deg, var(--page-bg), transparent); }
+html[data-sky-page="home"] .home-writing .home-writing-intro { color: var(--content-meta); font-size: .83rem; }
+html[data-sky-page="home"] .home-writing .direction-card-text { background: var(--card-bg); border-color: var(--line-divider); }
+html[data-sky-page="home"] .home-writing .direction-copy p,
+html[data-sky-page="home"] .home-writing .direction-card-text time { color: var(--content-meta); }
+html[data-sky-page="home"] .home-writing .direction-card-travel .direction-copy p { color: #e3eaf2; }
+html[data-sky-page="home"] .home-writing .travel-content { padding: 1.6rem; }
+html[data-sky-page="home"] .home-writing .direction-card-travel { border: 0; border-radius: 14px; }
+html[data-sky-page="home"] .home-writing .direction-card-text { padding: 1.35rem; border-radius: 14px; }
+html[data-sky-page="home"] .home-writing .direction-card-text h3 { color: var(--sky-ink); }
+html[data-sky-page="home"] .home-writing .archive-link { min-height: 44px; }
+html[data-sky-page="home"] .sky-archive-head { margin-top: 1.2rem; padding-bottom: 1.5rem; }
+html[data-sky-page="home"] .ew-en { color: var(--content-meta); font-family: inherit; text-transform: none; letter-spacing: 0; font-size: .8rem; }
+html[data-sky-page="home"] .ew-title-wrap h2 { color: var(--sky-ink); }
+
+/* Stop parent surfaces from moving beneath links and precise reading controls. */
+html[data-sky-page="home"] .enable-card-border .card-base:hover:not(.float-panel):not(.expanded-player):not(#search-panel) { transform: none; }
+
+@media (min-width: 1280px) {
+	html[data-sky-page="home"] #main-grid { padding-top: 2.2rem; }
+}
+@media (max-width: 800px) {
+	html[data-sky-page="home"] body.enable-banner:not(.fullscreen-banner):has(#navbar[data-is-home="true"]) .home-scroll-cue { display: none; }
+	html[data-sky-page="home"] #banner-wrapper .banner-contrast-overlay { background: linear-gradient(180deg, rgb(12 23 42 / .08), rgb(11 22 42 / .1) 24%, rgb(11 22 42 / .66) 72%, rgb(11 22 42 / .73)); }
+	html[data-sky-page="home"] .sky-welcome { padding-top: 1.5rem; gap: .7rem; }
+	html[data-sky-page="home"] .sky-welcome p { font-size: .9rem; }
+	html[data-sky-page="home"] .sky-welcome p > span { font-size: .72rem; }
+	html[data-sky-page="home"] .sky-welcome > a { font-size: .73rem; }
+	html[data-sky-page="home"] .sky-marquee { margin-bottom: 1.7rem; }
+	html[data-sky-page="home"] .home-writing .travel-content { padding: 1.35rem; }
+}
+@media (prefers-reduced-motion: reduce) {
+	html[data-sky-page="home"] .sky-marquee__track { animation: none; }
+}

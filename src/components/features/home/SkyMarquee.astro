@@ -1,0 +1,37 @@
+---
+/**
+ * Genesis v2：Banner 与内容之间的跑马灯氛围条
+ * 无限滚动，hover 暂停；纯 CSS 动画，尊重 reduced-motion。
+ */
+import { profileConfig } from "@/config";
+
+const name = profileConfig.name;
+const items = [
+	"SkyCity",
+	"记录生活",
+	"Study",
+	"学习札记",
+	"Travel",
+	"随风而行",
+	"Life",
+	"杂谈随笔",
+	`${name}`,
+];
+---
+
+<div class="sky-marquee genesis-cascade" aria-hidden="true">
+	<div class="sky-marquee__track">
+		{
+			[0, 1].map((copy) => (
+				<span class="sky-marquee__item" aria-hidden={copy === 1}>
+					{items.map((text) => (
+						<>
+							<span>{text}</span>
+							<i />
+						</>
+					))}
+				</span>
+			))
+		}
+	</div>
+</div>

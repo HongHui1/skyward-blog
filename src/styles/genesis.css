@@ -1,0 +1,389 @@
+/* ==========================================================================
+   SkyCity · Genesis 视觉升级层
+   卡片聚光 / 暗色星幕 / 流光标题 / 磁吸与涟漪的样式承载
+   依赖 html[data-sky-motion] 由 motion-system 提供：full | quiet | reduced
+   ========================================================================== */
+
+:root {
+	--genesis-ease: cubic-bezier(0.22, 1, 0.36, 1);
+	--genesis-spot-x: 50%;
+	--genesis-spot-y: 50%;
+	--genesis-spot-opacity: 0;
+}
+
+/* --------------------------------------------------------------------------
+   1. 卡片体系：hover 浮起 + 顶部高光 + 聚光边缘
+   悬浮面板（搜索/音乐展开条等）不参与浮起，避免层级混乱。
+   -------------------------------------------------------------------------- */
+
+.enable-card-border .card-base {
+	position: relative;
+	will-change: transform;
+	transition:
+		transform 0.45s var(--genesis-ease),
+		box-shadow 0.45s var(--genesis-ease),
+		border-color 0.3s ease,
+		background-color 0.15s ease;
+}
+
+.enable-card-border .card-base:hover:not(.float-panel):not(.expanded-player):not(#search-panel) {
+	transform: translateY(-3px);
+	box-shadow:
+		0 12px 32px -12px oklch(0.35 0.04 var(--hue) / 0.16),
+		0 4px 12px -4px oklch(0.35 0.04 var(--hue) / 0.08);
+	border-color: color-mix(in oklch, var(--primary) 24%, var(--line-divider));
+}
+
+/* 顶部渐变高光线：hover 时从两侧向中心点亮 */
+.enable-card-border .card-base::before {
+	content: "";
+	position: absolute;
+	top: 0;
+	left: 12%;
+	right: 12%;
+	height: 1px;
+	background: linear-gradient(
+		90deg,
+		transparent,
+		color-mix(in oklch, var(--primary) 65%, white) 50%,
+		transparent
+	);
+	opacity: 0;
+	transition: opacity 0.45s ease;
+	pointer-events: none;
+	z-index: 2;
+}
+
+.enable-card-border .card-base:hover::before {
+	opacity: 0.55;
+}
+
+/* 聚光边缘：跟随鼠标的柔光（坐标由 genesis-interactions 写入 CSS 变量） */
+@media (hover: hover) and (pointer: fine) {
+	html[data-sky-motion="full"] body[data-genesis-spotlight="true"] .card-base::after {
+		content: "";
+		position: absolute;
+		inset: 0;
+		border-radius: inherit;
+		pointer-events: none;
+		opacity: var(--genesis-spot-opacity);
+		transition: opacity 0.4s ease;
+		background:
+			radial-gradient(
+				18rem circle at var(--genesis-spot-x) var(--genesis-spot-y),
+				color-mix(in oklch, var(--primary) 14%, transparent),
+				transparent 65%
+			);
+		z-index: 1;
+	}
+
+	html[data-sky-motion="full"] body[data-genesis-spotlight="true"] .card-base[data-genesis-spot="on"]::after {
+		--genesis-spot-opacity: 1;
+	}
+}
+
+/* 卡片按压反馈：按下轻微下沉 */
+.enable-card-border .card-base:active:not(.float-panel):not(.expanded-player):not(#search-panel) {
+	transform: translateY(-1px) scale(0.995);
+}
+
+/* 卡片内文章封面：hover 轻微放大 + 光标驱动的 3D 微倾斜 */
+.post-card-item .card-base a[data-sky-shared-cover] img,
+.post-card .card-base a[data-sky-shared-cover] img {
+	transition: transform 0.5s var(--genesis-ease);
+}
+
+html[data-sky-motion="full"] .post-card-item .card-base:hover a[data-sky-shared-cover] img,
+html[data-sky-motion="full"] .post-card .card-base:hover a[data-sky-shared-cover] img {
+	transform: perspective(720px)
+		rotateX(var(--genesis-cover-rx, 0deg))
+		rotateY(var(--genesis-cover-ry, 0deg))
+		scale(1.05);
+}
+
+.post-card-item .card-base:hover a[data-sky-shared-cover] img,
+.post-card .card-base:hover a[data-sky-shared-cover] img {
+	transform: scale(1.045);
+}
+
+/* --------------------------------------------------------------------------
+   2. 暗色星幕：星点 + 极光色斑（fixed 层，位于页面背景之上、内容之下）
+   -------------------------------------------------------------------------- */
+
+#sky-starfield {
+	position: fixed;
+	inset: 0;
+	z-index: -1;
+	pointer-events: none;
+	opacity: 0;
+	transition: opacity 1.2s ease;
+}
+
+:root.dark #sky-starfield {
+	opacity: 1;
+	background-color: transparent;
+	/* 星点：三层不同粒径的白点，用 radial-gradient 平铺 */
+	background-image:
+		radial-gradient(1px 1px at 8% 22%, rgba(255, 255, 255, 0.55) 50%, transparent 51%),
+		radial-gradient(1px 1px at 26% 68%, rgba(255, 255, 255, 0.4) 50%, transparent 51%),
+		radial-gradient(1.5px 1.5px at 41% 12%, rgba(255, 255, 255, 0.5) 50%, transparent 51%),
+		radial-gradient(1px 1px at 55% 84%, rgba(255, 255, 255, 0.35) 50%, transparent 51%),
+		radial-gradient(1px 1px at 63% 34%, rgba(255, 255, 255, 0.5) 50%, transparent 51%),
+		radial-gradient(1.5px 1.5px at 74% 57%, rgba(255, 255, 255, 0.42) 50%, transparent 51%),
+		radial-gradient(1px 1px at 86% 18%, rgba(255, 255, 255, 0.5) 50%, transparent 51%),
+		radial-gradient(1px 1px at 92% 72%, rgba(255, 255, 255, 0.38) 50%, transparent 51%),
+		radial-gradient(1.2px 1.2px at 14% 88%, rgba(255, 255, 255, 0.34) 50%, transparent 51%),
+		radial-gradient(1.2px 1.2px at 34% 42%, rgba(255, 255, 255, 0.3) 50%, transparent 51%);
+	background-size: 46rem 46rem;
+	animation: genesis-star-drift 240s linear infinite alternate;
+}
+
+/* 极光色斑：独立伪元素，缓慢呼吸漂移，色调跟随主题 hue */
+:root.dark #sky-starfield::before {
+	content: "";
+	position: absolute;
+	inset: -20%;
+	background:
+		radial-gradient(
+			42rem 30rem at 18% 12%,
+			color-mix(in oklch, var(--primary) 13%, transparent),
+			transparent 70%
+		),
+		radial-gradient(
+			36rem 26rem at 82% 26%,
+			oklch(0.6 0.09 calc(var(--hue) + 70) / 0.1),
+			transparent 70%
+		),
+		radial-gradient(
+			44rem 32rem at 50% 92%,
+			oklch(0.6 0.08 calc(var(--hue) - 60) / 0.08),
+			transparent 70%
+		);
+	filter: blur(8px);
+	animation: genesis-aurora-breathe 26s ease-in-out infinite alternate;
+}
+
+/* 闪烁的亮星：少量高光星点 */
+:root.dark #sky-starfield::after {
+	content: "";
+	position: absolute;
+	inset: 0;
+	background-image:
+		radial-gradient(2px 2px at 21% 31%, rgba(255, 255, 255, 0.9) 50%, transparent 51%),
+		radial-gradient(1.6px 1.6px at 68% 15%, rgba(255, 255, 255, 0.8) 50%, transparent 51%),
+		radial-gradient(1.8px 1.8px at 83% 49%, rgba(255, 255, 255, 0.85) 50%, transparent 51%),
+		radial-gradient(1.4px 1.4px at 45% 74%, rgba(255, 255, 255, 0.75) 50%, transparent 51%);
+	background-size: 62rem 62rem;
+	animation: genesis-star-twinkle 7s ease-in-out infinite alternate;
+}
+
+@keyframes genesis-star-drift {
+	from { background-position: 0 0; }
+	to { background-position: -18rem 10rem; }
+}
+
+@keyframes genesis-aurora-breathe {
+	from {
+		opacity: 0.7;
+		transform: translate3d(-1.5%, -1%, 0) scale(1);
+	}
+	to {
+		opacity: 1;
+		transform: translate3d(1.5%, 1.2%, 0) scale(1.06);
+	}
+}
+
+@keyframes genesis-star-twinkle {
+	0%, 100% { opacity: 0.25; }
+	50% { opacity: 0.9; }
+}
+
+/* 全屏壁纸模式下星幕几乎不可见，直接关闭以省电 */
+body.fullscreen-banner #sky-starfield {
+	display: none;
+}
+
+/* --------------------------------------------------------------------------
+   3. 光标粒子光效画布（由脚本注入，仅 full 模式）
+   -------------------------------------------------------------------------- */
+
+#genesis-particles {
+	position: fixed;
+	top: 0;
+	left: 0;
+	z-index: 80;
+	width: 100vw;
+	height: 100vh;
+	pointer-events: none;
+}
+
+:root.dark #genesis-particles {
+	mix-blend-mode: screen;
+}
+
+/* --------------------------------------------------------------------------
+   4. 点击涟漪（span.genesis-ripple 由脚本注入按钮）
+   -------------------------------------------------------------------------- */
+
+.genesis-ripple-host {
+	position: relative;
+	overflow: hidden;
+}
+
+span.genesis-ripple {
+	position: absolute;
+	border-radius: 999px;
+	pointer-events: none;
+	background: radial-gradient(
+		circle,
+		currentColor 0%,
+		color-mix(in oklch, currentColor 30%, transparent) 45%,
+		transparent 70%
+	);
+	opacity: 0.35;
+	transform: scale(0);
+	animation: genesis-ripple 0.55s var(--genesis-ease) forwards;
+}
+
+@keyframes genesis-ripple {
+	to {
+		opacity: 0;
+		transform: scale(1);
+	}
+}
+
+/* --------------------------------------------------------------------------
+   5. 磁吸按钮：容器 transform 由脚本写入，这里定义回弹
+   -------------------------------------------------------------------------- */
+
+.genesis-magnetic {
+	transition: transform 0.4s var(--genesis-ease);
+	will-change: transform;
+}
+
+/* --------------------------------------------------------------------------
+   6. 卡片级联入场（进入视口时依次上浮淡入）
+   -------------------------------------------------------------------------- */
+
+html[data-sky-motion]:not([data-sky-motion="reduced"]) body[data-genesis-cascade="true"] .genesis-cascade {
+	opacity: 0;
+	transform: translate3d(0, 1.4rem, 0);
+	transition:
+		opacity 0.6s var(--genesis-ease),
+		transform 0.6s var(--genesis-ease);
+	transition-delay: var(--genesis-cascade-delay, 0ms);
+}
+
+html[data-sky-motion]:not([data-sky-motion="reduced"]) body[data-genesis-cascade="true"] .genesis-cascade.genesis-cascade-visible {
+	opacity: 1;
+	transform: translate3d(0, 0, 0);
+}
+
+/* 与卡片 hover 浮起共存：入场完成后交还 hover 过渡 */
+html[data-sky-motion]:not([data-sky-motion="reduced"]) body[data-genesis-cascade="true"] .genesis-cascade.genesis-cascade-visible.card-base {
+	transition:
+		transform 0.45s var(--genesis-ease),
+		box-shadow 0.45s var(--genesis-ease),
+		border-color 0.3s ease,
+		background-color 0.15s ease,
+		opacity 0.6s var(--genesis-ease);
+}
+
+/* --------------------------------------------------------------------------
+   7. 细节打磨
+   -------------------------------------------------------------------------- */
+
+/* 侧边栏 widget 标题竖条：改为主题渐变 + 微光 */
+.card-base > div[class*="font-bold"][class*="relative"]::before {
+	background: linear-gradient(
+		180deg,
+		color-mix(in oklch, var(--primary) 70%, white),
+		var(--primary)
+	) !important;
+	box-shadow: 0 0 8px color-mix(in oklch, var(--primary) 45%, transparent);
+}
+
+/* 文章标题 hover：渐变文字 */
+.post-card-item .card-base a[data-sky-shared-title]:hover,
+.post-card .card-base a[data-sky-shared-title]:hover {
+	background-image: linear-gradient(
+		100deg,
+		var(--primary),
+		oklch(0.72 0.13 calc(var(--hue) + 42)),
+		var(--primary)
+	);
+	background-size: 200% 100%;
+	-webkit-background-clip: text;
+	background-clip: text;
+	-webkit-text-fill-color: transparent;
+	animation: genesis-title-sheen 2.2s linear infinite;
+}
+
+@keyframes genesis-title-sheen {
+	to { background-position: -200% 0; }
+}
+
+/* 首页 hero 主标题：流光渐变（保留原有 text-shadow 光晕） */
+html[data-sky-page="home"] .banner-text-overlay .banner-title {
+	background-image: linear-gradient(
+		105deg,
+		#ffffff 0%,
+		#ffffff 32%,
+		color-mix(in oklch, white 72%, var(--primary)) 46%,
+		#ffffff 58%,
+		#ffffff 100%
+	);
+	background-size: 220% 100%;
+	-webkit-background-clip: text;
+	background-clip: text;
+	animation: genesis-title-sheen 7s ease-in-out infinite;
+}
+
+/* 头像：hover 流光边框 */
+.card-base .group.overflow-hidden.rounded-xl img {
+	transition: transform 0.65s var(--genesis-ease);
+}
+
+.card-base .group.overflow-hidden.rounded-xl:hover img {
+	transform: scale(1.05);
+}
+
+/* --------------------------------------------------------------------------
+   8. 降级与可达性
+   -------------------------------------------------------------------------- */
+
+@media (prefers-reduced-motion: reduce) {
+	.enable-card-border .card-base,
+	.enable-card-border .card-base:hover {
+		transform: none;
+		transition: none;
+	}
+
+	#sky-starfield,
+	#sky-starfield::before,
+	#sky-starfield::after {
+		animation: none;
+	}
+
+	#genesis-particles {
+		display: none;
+	}
+
+	.genesis-magnetic {
+		transform: none !important;
+	}
+
+	.post-card-item .card-base a[data-sky-shared-title]:hover,
+	.post-card .card-base a[data-sky-shared-title]:hover,
+	html[data-sky-page="home"] .banner-text-overlay .banner-title {
+		animation: none;
+		background: none;
+		-webkit-text-fill-color: currentColor;
+	}
+}
+
+@media (hover: none), (pointer: coarse) {
+	#genesis-particles {
+		display: none;
+	}
+}

@@ -424,6 +424,23 @@ export interface SidebarLayoutConfig {
 	};
 }
 
+export interface InteractionConfig {
+	/** 交互升级总开关（光标光晕/磁吸/涟漪/卡片聚光等） */
+	enable: boolean;
+	/** 光标柔光晕（仅桌面精确指针设备生效） */
+	cursorAura: boolean;
+	/** 卡片聚光高亮：鼠标位置驱动的边缘流光 */
+	cardSpotlight: boolean;
+	/** 磁吸按钮：按钮轻微跟随鼠标 */
+	magneticButtons: boolean;
+	/** 点击涟漪动效 */
+	ripple: boolean;
+	/** 暗色模式星幕背景（星点 + 极光色斑） */
+	starfield: boolean;
+	/** 卡片滚动级联入场 */
+	cascadeReveal: boolean;
+}
+
 export interface SakuraConfig {
 	enable: boolean;
 	switchable?: boolean;

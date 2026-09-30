@@ -1,6 +1,6 @@
 ---
 import Pagination from "@components/control/Pagination.astro";
-import RecentWriting from "@components/features/home/RecentWriting.astro";
+import HomeJourney from "@components/features/home/HomeJourney.astro";
 import CategoryBar from "@components/features/posts/CategoryBar.astro";
 import PostPage from "@components/features/posts/PostPage.astro";
 import MainGridLayout from "@layouts/MainGridLayout.astro";
@@ -27,18 +27,17 @@ const len = page.data.length;
 ---
 
 <MainGridLayout>
-	{page.currentPage === 1 && <RecentWriting />}
-	{showCategoryBar && <CategoryBar />}
 	{page.currentPage === 1 ? (
-		<section id="sky-archive" class="sky-archive-coordinate">
-			<PostPage page={page} />
-		</section>
+		<HomeJourney posts={page.data} />
 	) : (
-		<PostPage page={page} />
+		<>
+			{showCategoryBar && <CategoryBar />}
+			<PostPage page={page} />
+		</>
 	)}
-	<Pagination
+	{page.lastPage > 1 && <Pagination
 		class="mx-auto onload-animation"
 		page={page}
 		style={`animation-delay: calc(var(--content-delay) + ${len * 50}ms)`}
-	/>
+	/>}
 </MainGridLayout>
