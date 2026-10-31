@@ -3,7 +3,7 @@
 	"FileReferences": {
 		"Moc": "noir.moc3",
 		"Textures": [
-			"noir.2048/texture_00.png"
+			"noir.2048/texture_00.webp"
 		],
 		"Physics": "noir.physics3.json",
 		"DisplayInfo": "noir.cdi3.json"

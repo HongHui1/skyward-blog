@@ -3,13 +3,16 @@ import type { PioConfig } from "../types/config";
 // Pio 看板娘配置
 export const pioConfig: PioConfig = {
 	enable: true, // 启用看板娘
-	models: ["/pio/models/NOIR/noir.model3.json"], // 默认模型路径
+	models: ["/pio/models/NOIR/noir.model3.json"],
 	position: "left", // 模型位置
-	width: 280, // 默认宽度
-	height: 250, // 默认高度
+	width: 280,
+	height: 280,
+	mouseFollow: {
+		enabled: true,
+	},
 	mode: "draggable", // 默认为可拖拽模式
 	hiddenOnMobile: true, // 默认在移动设备上隐藏
-	hideAboutMenu: false, // 隐藏内置 About 菜单按钮
+	hideAboutMenu: false,
 	dialog: {
 		welcome: "", // 首页首屏不显示模板欢迎气泡
 		touch: [

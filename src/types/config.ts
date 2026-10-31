@@ -518,6 +518,26 @@ export interface PioConfig {
 	position?: "left" | "right"; // 看板娘位置
 	width?: number; // 看板娘宽度
 	height?: number; // 看板娘高度
+	modelScale?: number;
+	modelOffset?: [number, number];
+	mouseFollow?: {
+		enabled?: boolean;
+		parameters?: {
+			headX?: string;
+			headY?: string;
+			headZ?: string;
+			bodyX?: string;
+			eyeX?: string;
+			eyeY?: string;
+		};
+	};
+	attribution?: {
+		name: string;
+		artist: string;
+		rigger: string;
+		source: string;
+		license: string;
+	};
 	mode?: "static" | "fixed" | "draggable"; // 展现模式
 	hiddenOnMobile?: boolean; // 是否在移动设备上隐藏
 	hideAboutMenu?: boolean; // 是否隐藏内置 About 菜单按钮

@@ -9,8 +9,12 @@ interface Props {
 const { config } = Astro.props;
 
 const modelPaths = config.models ?? ["/pio/models/NOIR/noir.model3.json"];
-const modelConfigs = modelPaths.map((p) => ({ path: withBase(p) }));
-const frameSrc = withBase("/pio/live2d-host.html");
+const modelConfigs = modelPaths.map((p) => ({
+	path: withBase(p),
+	scale: config.modelScale,
+	offset: config.modelOffset,
+}));
+const frameSrc = withBase("/pio/live2d-host.html?v=noir-20261031");
 const homeUrl = withBase("/");
 
 const position = config.position === "right" ? "bottom-right" : "bottom-left";
@@ -34,9 +38,13 @@ if (config.tips) {
 const widgetConfig: Record<string, unknown> = {
 	model: modelConfigs.length === 1 ? modelConfigs[0] : modelConfigs,
 	position,
-	size: config.width ?? 280,
-	transitionDuration: 1500,
-	transitionType: "slide",
+	size: { width: config.width ?? 280, height: config.height ?? 280 },
+	transitionDuration: 220,
+	transitionType: "fade",
+	_mouseFollow: config.mouseFollow ?? { enabled: true },
+	_attribution: config.attribution
+		? { ...config.attribution, license: withBase(config.attribution.license) }
+		: undefined,
 	_hideAbout: config.hideAboutMenu ?? true,
 };
 
@@ -68,7 +76,7 @@ const isRight = config.position === "right";
 
 <iframe
 	id="l2d-iframe"
-	title="SkyCity Live2D 看板娘"
+	title={config.attribution?.name ?? "SkyCity Live2D 看板娘"}
 	src={frameSrc}
 	allowtransparency="true"
 	style={"position: fixed; z-index: 999; pointer-events: none; border: none; bottom: 0;"
@@ -96,6 +104,11 @@ const isRight = config.position === "right";
 		opacity: 0.18 !important;
 		pointer-events: none !important;
 		transform: translate3d(var(--pio-shelter-x), 18%, 0) scale(0.88);
+	}
+
+	#l2d-iframe[data-over-control="true"] {
+		opacity: 0.15 !important;
+		pointer-events: none !important;
 	}
 
 	@media (prefers-reduced-motion: reduce) {
@@ -153,6 +166,53 @@ const isRight = config.position === "right";
 			let swupHooksRegistered = false;
 			let musicExpanded = false;
 			let shelterFrame = 0;
+			let pointerFrame = 0;
+			let pointerX = 0;
+			let pointerY = 0;
+			const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
+			const finePointer = window.matchMedia("(hover: hover) and (pointer: fine)");
+
+			function protectPageControls(x: number, y: number, modelControl = false) {
+				if (!currentEl) return;
+				const rect = currentEl.getBoundingClientRect();
+				const inside = x >= rect.left && x <= rect.right && y >= rect.top && y <= rect.bottom;
+				const overControl = inside && !modelControl && document.elementsFromPoint(x, y).some(
+					(element) => element !== currentEl && element.closest("a, button, input, select, textarea, [role='button'], [role='slider']"),
+				);
+				currentEl.dataset.overControl = String(overControl);
+			}
+
+			function postPointer(reset = false) {
+				pointerFrame = 0;
+				if (!currentEl || !initSent || document.hidden) return;
+				if (currentEl.style.display === "none") return;
+				const rect = currentEl.getBoundingClientRect();
+				// Normalize both sides of the character independently, so the left
+				// screen edge still produces a clear leftward glance.
+				const centerX = Math.max(1, Math.min(window.innerWidth - 1, rect.left + rect.width / 2));
+				const centerY = Math.max(1, Math.min(window.innerHeight - 1, rect.top + rect.height * 0.25));
+				const dx = pointerX - centerX;
+				const dy = centerY - pointerY;
+				const x = dx / Math.max(1, dx < 0 ? centerX : window.innerWidth - centerX);
+				const y = dy / Math.max(1, dy < 0 ? window.innerHeight - centerY : centerY);
+				currentEl.contentWindow?.postMessage(
+					{ type: "l2d-pointer", x: reset ? 0 : Math.max(-1, Math.min(1, x)), y: reset ? 0 : Math.max(-1, Math.min(1, y)) },
+					window.location.origin,
+				);
+			}
+
+			function resetPointer(event?: Event) {
+				window.cancelAnimationFrame(pointerFrame);
+				pointerFrame = 0;
+				postPointer(true);
+				if (event instanceof PointerEvent) {
+					pointerX = event.clientX;
+					pointerY = event.clientY;
+				}
+				// Changing iframe hit testing can itself trigger pointerleave.
+				// Recompute protection instead of making the iframe opaque again.
+				protectPageControls(pointerX, pointerY);
+			}
 
 			function applyVisibility() {
 				if (!currentEl) return;
@@ -164,6 +224,10 @@ const isRight = config.position === "right";
 				} else {
 					currentEl.style.display = "";
 				}
+				currentEl.contentWindow?.postMessage(
+					{ type: "l2d-visibility", visible: currentEl.style.display !== "none" && !document.hidden },
+					window.location.origin,
+				);
 			}
 
 			function isFocusedReading() {
@@ -199,7 +263,7 @@ const isRight = config.position === "right";
 					return;
 				currentEl.contentWindow?.postMessage(
 					{ type: "l2d-init", config: currentConfig },
-					"*",
+					window.location.origin,
 				);
 				initSent = true;
 			}
@@ -223,17 +287,29 @@ const isRight = config.position === "right";
 			}
 
 			function handleMessage(e: MessageEvent) {
-				if (!currentEl || e.source !== currentEl.contentWindow) return;
+				if (!currentEl || e.origin !== window.location.origin || e.source !== currentEl.contentWindow || !e.data) return;
 
 				if (e.data.type === "l2d-loaded") {
 					const h = e.data.contentHeight || 500;
 					currentEl.style.height = h + "px";
 					currentEl.style.opacity = "1";
 					currentEl.style.pointerEvents = "auto";
+					applyVisibility();
+				}
+				if (e.data.type === "l2d-error") {
+					currentEl.style.opacity = "0";
+					currentEl.style.pointerEvents = "none";
+					console.warn("Live2D 模型未能加载，可刷新页面重试。", e.data.message);
 				}
 
 				if (e.data.type === "l2d-action") {
 					menuActions[e.data.action]?.();
+				}
+				if (e.data.type === "l2d-local-pointer" && Number.isFinite(e.data.x) && Number.isFinite(e.data.y)) {
+					pointerX = e.data.x;
+					pointerY = e.data.y;
+					protectPageControls(pointerX, pointerY, e.data.interactive === true);
+					if (!pointerFrame) pointerFrame = window.requestAnimationFrame(() => postPointer());
 				}
 			}
 
@@ -253,6 +329,26 @@ const isRight = config.position === "right";
 			}
 
 			window.addEventListener("message", handleMessage);
+			window.addEventListener("pointermove", (event) => {
+				if (event.pointerType !== "mouse") return;
+				pointerX = event.clientX;
+				pointerY = event.clientY;
+				protectPageControls(pointerX, pointerY);
+				if (reducedMotion.matches || !finePointer.matches) return;
+				if (!pointerFrame) pointerFrame = window.requestAnimationFrame(() => postPointer());
+			}, { passive: true });
+			document.documentElement.addEventListener("pointerleave", resetPointer);
+			window.addEventListener("blur", resetPointer);
+			document.addEventListener("visibilitychange", () => {
+				resetPointer();
+				applyVisibility();
+			});
+				reducedMotion.addEventListener("change", () => {
+					if (reducedMotion.matches) resetPointer();
+				});
+				finePointer.addEventListener("change", () => {
+					if (!finePointer.matches) resetPointer();
+				});
 			window.addEventListener("resize", () => {
 				applyVisibility();
 				scheduleShelterState();

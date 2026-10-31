@@ -58,6 +58,7 @@ src/data/bilibili-data.json
 .impeccable/
 
 # Live2D editor source files
+/live2d/
 *.psd
 *.psd~
 *.cmo3

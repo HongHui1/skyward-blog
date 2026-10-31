@@ -1,13 +1,22 @@
 <!DOCTYPE html>
-<html>
+<html lang="zh-CN">
 <head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <style>
   * { margin: 0; padding: 0; }
   html, body { width: 100%; height: 100%; overflow: hidden; background: transparent; }
+  #model-credit { position: fixed; inset: auto 8px 8px; box-sizing: border-box; padding: 14px; border-radius: 12px; background: #f8fbff; color: #182d45; font: 12px/1.7 system-ui, sans-serif; z-index: 10000; }
+  #model-credit p { margin-block: 4px; }
+  #model-credit a { color: #174f90; text-underline-offset: 3px; }
+  #model-credit button { min-height: 32px; padding: 2px 10px; margin-top: 6px; cursor: pointer; color: inherit; background: #e5eef8; border: 0; border-radius: 6px; }
+  button:focus-visible, a:focus-visible { outline: 2px solid #174f90; outline-offset: 3px; }
+  @media (prefers-reduced-motion: reduce) {
+    body * { transition: none !important; animation: none !important; }
+  }
 </style>
 </head>
 <body>
-	<script src="./l2d-widget.min.js"></script>
 <script>
   var widgetInstance = null;
   var activeConfigKey = '';
@@ -18,15 +27,169 @@
   var floatingContentPadding = 12;
   var layoutObserver = null;
   var layoutFrame = 0;
+  var trackingFrame = 0;
+  var trackingTime = 0;
+  var targetX = 0;
+  var targetY = 0;
+  var gazeX = 0;
+  var gazeY = 0;
+  var trackingConfig = {};
+  var trackingParameters = [];
+  var modelAttribution = null;
+  var frozenParameters = null;
+  var reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+  var finePointer = window.matchMedia('(hover: hover) and (pointer: fine)');
+  var loadTimeout = 0;
+  var creditTrigger = null;
+  var runtimePromise = null;
+  var sceneVisible = true;
+  var pauseFrame = 0;
+
+  function loadRuntime() {
+    if (!runtimePromise) runtimePromise = new Promise(function(resolve, reject) {
+      var script = document.createElement('script');
+      script.src = './l2d-widget.min.js?v=noir-20261031';
+      script.onload = resolve;
+      script.onerror = function() { runtimePromise = null; script.remove(); reject(new Error('Live2D 播放器加载失败')); };
+      document.head.appendChild(script);
+    });
+    return runtimePromise;
+  }
+
+  function postToParent(message) {
+    parent.postMessage(message, window.location.origin);
+  }
+
+  function closeCredit() {
+    var credit = document.getElementById('model-credit');
+    if (credit) {
+      credit.remove();
+      if (creditTrigger && creditTrigger.isConnected) creditTrigger.focus();
+    }
+    scheduleLayoutMeasurement();
+  }
+
+  function showCredit() {
+    if (!modelAttribution) return;
+    if (document.getElementById('model-credit')) { closeCredit(); return; }
+    creditTrigger = document.activeElement;
+    var panel = document.createElement('section');
+    panel.id = 'model-credit';
+    panel.setAttribute('aria-label', '模型来源');
+    [modelAttribution.name, '原画及拆分：' + modelAttribution.artist, 'Live2D 建模：' + modelAttribution.rigger, '来源：' + modelAttribution.source].forEach(function(text) {
+      var line = document.createElement('p');
+      line.textContent = text;
+      panel.appendChild(line);
+    });
+    var link = document.createElement('a');
+    link.href = modelAttribution.license;
+    link.target = '_blank';
+    link.rel = 'noopener';
+    link.textContent = '查看模型使用须知';
+    panel.appendChild(link);
+    var close = document.createElement('button');
+    close.type = 'button';
+    close.textContent = '关闭说明';
+    close.addEventListener('click', closeCredit);
+    panel.appendChild(document.createElement('br'));
+    panel.appendChild(close);
+    document.body.appendChild(panel);
+    close.focus();
+    scheduleLayoutMeasurement();
+  }
 
   var menuActions = {
-    home: function() { parent.postMessage({ type: 'l2d-action', action: 'home' }, '*'); },
-    scrollToTop: function() { parent.postMessage({ type: 'l2d-action', action: 'scrollToTop' }, '*'); },
+    home: function() { postToParent({ type: 'l2d-action', action: 'home' }); },
+    scrollToTop: function() { postToParent({ type: 'l2d-action', action: 'scrollToTop' }); },
     sleep: function(w) { w.sleep(); },
   };
 
   function notifyLoaded() {
-    parent.postMessage({ type: 'l2d-loaded', contentHeight: lastContentHeight }, '*');
+    postToParent({ type: 'l2d-loaded', contentHeight: lastContentHeight });
+  }
+
+  function configureTracking() {
+    var mapping = Object.assign({ headX: 'ParamAngleX', headY: 'ParamAngleY', headZ: 'ParamAngleZ', bodyX: 'ParamBodyAngleX', eyeX: 'ParamEyeBallX', eyeY: 'ParamEyeBallY' }, trackingConfig.parameters);
+    var params = widgetInstance.l2d.getParams();
+    trackingParameters = Object.keys(mapping).map(function(axis) {
+      var param = params.find(function(p) { return p.id === mapping[axis]; });
+      return param ? { axis: axis, param: param } : null;
+    }).filter(Boolean);
+    frozenParameters = null;
+    applyMotionPreference();
+  }
+
+  function writeGaze() {
+    if (!widgetInstance || !widgetLoaded) return;
+    var params = {};
+    var factors = { headX: gazeX * 0.65, headY: gazeY * 0.5, headZ: -gazeX * gazeY * 0.12, bodyX: gazeX * 0.18, eyeX: gazeX * 0.75, eyeY: gazeY * 0.65 };
+    trackingParameters.forEach(function(entry) {
+      var param = entry.param;
+      var factor = factors[entry.axis];
+      params[param.id] = Math.max(param.min, Math.min(param.max, param.default + factor * (factor < 0 ? param.default - param.min : param.max - param.default)));
+    });
+    widgetInstance.l2d.setParams(params);
+  }
+
+  function updateGaze(time) {
+    trackingFrame = 0;
+    if (!widgetLoaded || reducedMotion.matches || document.hidden || !sceneVisible) return;
+    var elapsed = trackingTime ? Math.min(64, time - trackingTime) : 16;
+    trackingTime = time;
+    var blend = 1 - Math.exp(-elapsed / 110);
+    gazeX += (targetX - gazeX) * blend;
+    gazeY += (targetY - gazeY) * blend;
+    var settled = Math.abs(targetX - gazeX) + Math.abs(targetY - gazeY) < 0.001;
+    if (settled) { gazeX = targetX; gazeY = targetY; }
+    writeGaze();
+    if (!settled) trackingFrame = requestAnimationFrame(updateGaze);
+  }
+
+  function setGaze(x, y) {
+    if (!widgetLoaded || trackingConfig.enabled === false || reducedMotion.matches || !finePointer.matches || document.hidden || !sceneVisible) return;
+    if (Math.abs(x - targetX) + Math.abs(y - targetY) < 0.001) return;
+    targetX = Math.max(-1, Math.min(1, x));
+    targetY = Math.max(-1, Math.min(1, y));
+    if (!trackingFrame) { trackingTime = 0; trackingFrame = requestAnimationFrame(updateGaze); }
+  }
+
+  function applyMotionPreference() {
+    if (!widgetLoaded) return;
+    cancelAnimationFrame(trackingFrame);
+    cancelAnimationFrame(pauseFrame);
+    pauseFrame = 0;
+    trackingFrame = 0;
+    if (reducedMotion.matches || !finePointer.matches || document.hidden || !sceneVisible) {
+      targetX = targetY = gazeX = gazeY = 0;
+    }
+    writeGaze();
+    if (reducedMotion.matches) {
+      // Freeze the complete pose, including blinking, breathing and hair physics.
+      if (!frozenParameters) {
+        frozenParameters = {};
+        widgetInstance.l2d.getParams().forEach(function(p) { frozenParameters[p.id] = p.value; });
+        trackingParameters.forEach(function(entry) { frozenParameters[entry.param.id] = entry.param.default; });
+      }
+      widgetInstance.l2d.setParams(frozenParameters);
+    } else {
+      frozenParameters = null;
+      if (targetX !== gazeX || targetY !== gazeY) {
+        trackingTime = 0;
+        trackingFrame = requestAnimationFrame(updateGaze);
+      }
+    }
+    var l2d = widgetInstance.l2d;
+    if (document.hidden || !sceneVisible) l2d.setPaused(true);
+    else if (reducedMotion.matches) {
+      // Allow the neutral/frozen pose to paint once, then stop the renderer.
+      l2d.setPaused(false);
+      pauseFrame = requestAnimationFrame(function() { pauseFrame = 0; l2d.setPaused(true); });
+    } else l2d.setPaused(false);
+  }
+
+  function notifyError(message) {
+    clearTimeout(loadTimeout);
+    postToParent({ type: 'l2d-error', message: message });
   }
 
   function getWidgetHeight(size) {
@@ -90,7 +253,7 @@
   function destroyWidget() {
     if (!widgetInstance) return;
     try {
-      widgetInstance.destroy();
+      widgetInstance.destroy().catch(function(err) { console.error('Failed to destroy Live2D widget:', err); });
     } catch (err) {
       console.error('Failed to destroy Live2D widget:', err);
     }
@@ -99,9 +262,25 @@
     if (layoutObserver) layoutObserver.disconnect();
     layoutObserver = null;
     cancelAnimationFrame(layoutFrame);
+    cancelAnimationFrame(trackingFrame);
+    cancelAnimationFrame(pauseFrame);
+    pauseFrame = 0;
+    trackingFrame = 0;
+    clearTimeout(loadTimeout);
+    closeCredit();
   }
 
-  window.addEventListener('message', function(e) {
+  window.addEventListener('message', async function(e) {
+    if (e.origin !== window.location.origin || e.source !== parent || !e.data) return;
+    if (e.data.type === 'l2d-visibility') {
+      sceneVisible = e.data.visible === true;
+      applyMotionPreference();
+      return;
+    }
+    if (e.data.type === 'l2d-pointer') {
+      if (Number.isFinite(e.data.x) && Number.isFinite(e.data.y)) setGaze(e.data.x, e.data.y);
+      return;
+    }
     if (e.data.type !== 'l2d-init') return;
     var config = e.data.config;
     var configKey = JSON.stringify(config);
@@ -119,6 +298,8 @@
     if (widgetInstance) {
       destroyWidget();
     }
+    trackingConfig = config._mouseFollow || {};
+    modelAttribution = config._attribution || null;
 
     if (config.menus && config.menus.items) {
       config.menus.items = config.menus.items.map(function(item) {
@@ -129,8 +310,17 @@
         };
       });
     }
+    if (modelAttribution) {
+      config.menus = config.menus || {};
+      var creditMenu = { icon: 'mdi:information-outline', label: '模型来源', onClick: showCredit };
+      if (config.menus.items) config.menus.items.push(creditMenu);
+      else config.menus.extraItems = [creditMenu];
+    }
+    if (reducedMotion.matches) config.transitionDuration = 0;
 
     try {
+      await loadRuntime();
+      if (loadingConfigKey !== configKey) return;
       widgetInstance = L2D_WIDGET.createWidget(config);
       activeConfigKey = configKey;
       baseContentHeight = getWidgetHeight(config.size);
@@ -139,16 +329,20 @@
       loadingConfigKey = '';
       activeConfigKey = '';
       console.error('Failed to initialize Live2D widget:', err);
+      notifyError(String(err));
       return;
     }
     loadingConfigKey = '';
+    loadTimeout = setTimeout(function() { if (!widgetLoaded) notifyError('模型加载超时'); }, 45000);
 
     if (config._hideAbout) {
       hideAboutMenu();
     }
 
     widgetInstance.l2d.on('loaded', function() {
+      clearTimeout(loadTimeout);
       widgetLoaded = true;
+      configureTracking();
       notifyLoaded();
       observeWidgetLayout();
       scheduleLayoutMeasurement();
@@ -156,6 +350,22 @@
   });
 
   window.addEventListener('resize', scheduleLayoutMeasurement);
+  reducedMotion.addEventListener('change', applyMotionPreference);
+  finePointer.addEventListener('change', applyMotionPreference);
+  document.addEventListener('visibilitychange', applyMotionPreference);
+  document.addEventListener('keydown', function(e) { if (e.key === 'Escape') closeCredit(); });
+  window.addEventListener('unhandledrejection', function(e) { notifyError(String(e.reason)); });
+  // Suppress the runtime's iframe-local look handler; all gaze uses the same page-wide mapping.
+  document.addEventListener('mousemove', function(e) { if (widgetLoaded) e.stopImmediatePropagation(); }, true);
+  document.addEventListener('mouseout', function(e) { if (widgetLoaded) e.stopImmediatePropagation(); }, true);
+  document.addEventListener('pointermove', function(e) {
+    if (e.pointerType !== 'mouse') return;
+    var frame = window.frameElement && window.frameElement.getBoundingClientRect();
+    if (!frame) return;
+    // Resolve coordinates at event time; the iframe may resize before the
+    // parent receives this asynchronous message.
+    postToParent({ type: 'l2d-local-pointer', x: frame.left + e.clientX, y: frame.top + e.clientY, interactive: Boolean(e.target.closest('button, a, #model-credit')) });
+  }, { passive: true });
 </script>
 </body>
 </html>

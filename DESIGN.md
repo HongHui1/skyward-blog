@@ -206,3 +206,15 @@ Paper/photo corners intentionally use 1–4px radii, distinct from the existing 
 GSAP ScrollTrigger gives desktop photographs a small reversible drift and unfolds the essay's rule. It does not pin or replace scrolling, and never hides content. Touch/narrow layouts and reduced-motion preferences use the static composition. A reconnectable custom element reverts its own animations and listeners on route changes. Travel controls retain keyboard, swipe and loading-error behavior.
 
 Validation: desktop 1440×1000, mobile 390×844, light/dark, gallery next/thumbnail/End key, Swup about-and-back, live reduced-motion cleanup, no horizontal overflow, Astro check and static build. Mechanical detector findings were limited to intentional new font/radius/shadow values, now documented in this system.
+
+## Live2D companion — 2026-10-31
+
+本地与公开博客统一使用原有 NOIR 黑发猫耳模型，保持左下角 280×280 的透明画布。实验模型及配置备份在被 Git 忽略的 `live2d/`，不进入 `public/` 或部署产物。
+
+NOIR 网页贴图使用 2048×2048 无损 WebP，约 1.99MB 缩减为 0.75MB；原始 PNG 保留兼容旧链接。逐像素检查 alpha 与可见 RGB 一致。
+
+按角色位置归一化整页鼠标坐标，使用 NOIR 的 `ParamAngleX/Y/Z`、`ParamBodyAngleX`（存在时）及眼球输入参数。110ms 指数平滑，限定在模型原始范围内，收敛后停止额外跟随更新。借鉴鲸语的驱动顺序，在原模型物理计算前写入输入，保留呼吸、眨眼与头发物理；没有引入其代码、AI 服务或 VTS 依赖。
+
+渲染上限 30fps，后台或窄屏停止渲染，减少动态偏好显示静态姿态。移动端不下载播放器脚本和模型；放大到桌面宽度后才按需初始化，Swup 导航维持单个实例。鼠标移入角色覆盖的页面按钮或链接时淡化角色并让点击穿透，音乐面板与阅读避让沿用现有设计。iframe 消息校验来源窗口与同源 origin。
+
+运行库补丁集中在 `scripts/patch-live2d-runtime.mjs`，对源码特征严格检查，并可重复执行。升级播放器后需重新审查物理更新、遮罩分配、帧率与暂停恢复。
