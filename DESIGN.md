@@ -81,7 +81,7 @@ components:
 
 - 动态天空与安静阅读并存。
 - 真实摄影、可选择场景、始终保留署名。
-- 延续现有主题变量与字体；自然页脚按需加载 Three.js，正文不依赖三维渲染。
+- 延续现有主题变量与字体；页脚使用简洁文字，不加载三维微景观。
 
 ## Colors
 
@@ -167,7 +167,9 @@ components:
 
 ## Do's and Don'ts
 
-### Shared nature footer · September 2026
+### Shared nature footer · September 2026（历史方案，2026-10-30 已移除）
+
+按用户要求移除底部 SKYCITY 三维微景观及其组件，构建不再加载该场景脚本；保留版权、订阅链接、主题署名与移动端底部安全留白。以下为历史设计记录。
 
 所有使用 MainGridLayout 的公开页面复用 PixelSignature。页脚使用 Three.js / WebGL 实时构建自然微景观：SKYCITY 为连续轮廓挤出的实体字，底部被起伏草坡与泥土部分遮挡；草叶、野花、碎石和根须均为模型。用户指定的材质方向是「类似 Minecraft 开启光影与材质包后，保留像素但具有真实感」。不使用生成图片替代三维场景。
 

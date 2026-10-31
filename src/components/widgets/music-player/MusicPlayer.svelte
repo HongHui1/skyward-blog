@@ -131,6 +131,7 @@ function startVolumeDrag(event: PointerEvent) {
 }
 
 function handleVolumeKeyDown(event: KeyboardEvent) {
+	if (event.defaultPrevented) return;
 	const target = event.target as HTMLElement;
 	if (
 		target?.tagName === "INPUT" ||
@@ -158,6 +159,21 @@ function handleVolumeKeyDown(event: KeyboardEvent) {
 		event.key === "m" ||
 		event.key === "M"
 	) {
+		event.preventDefault();
+		toggleMute();
+	}
+}
+
+function handleMusicShortcut(event: KeyboardEvent) {
+	const target = event.target;
+	if (
+		event.defaultPrevented ||
+		event.ctrlKey || event.metaKey || event.altKey ||
+		(target instanceof Element && target.closest(
+			"button, a, input, textarea, select, [contenteditable], [role='slider'], [role='button']",
+		))
+	) return;
+	if (event.key.toLowerCase() === "m") {
 		event.preventDefault();
 		toggleMute();
 	}
@@ -200,7 +216,7 @@ onDestroy(() => {
 });
 </script>
 
-<svelte:window onkeydown={handleVolumeKeyDown} />
+<svelte:window onkeydown={handleMusicShortcut} />
 
 {#if shouldRenderFloatingUi}
 	{#if state.showError}

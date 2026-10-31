@@ -45,10 +45,10 @@ const date = (value: Date | string) => new Intl.DateTimeFormat("zh-CN", { year: 
 				<span class="journey-link">翻开这篇札记 <Icon name="material-symbols:arrow-forward-rounded" /></span>
 			</a>}
 			{diary && <article class="journey-diary">
-				<p class="journey-eyebrow">生活的切片 / 随笔</p>
-				<blockquote>天空蓝得透彻，<br />云白得纯粹。</blockquote>
+				<p class="journey-eyebrow">生活的切片 / 杂谈</p>
+				<blockquote>{(diary.quote ?? diary.content.split("\n\n")[0]).split("\n").map((line, index) => <>{index > 0 && <br />}{line}</>)}</blockquote>
 				<div class="journey-diary__body"><time datetime={diary.date}>{date(diary.date)}</time><h3>{diary.title}</h3><p>{diary.content.split("\n\n")[0]}</p></div>
-				<a class="journey-link" href={url("/diary/")}>读这一段夏天 <Icon name="material-symbols:arrow-forward-rounded" /></a>
+				<a class="journey-link" href={url("/diary/")}>读这篇杂谈 <Icon name="material-symbols:arrow-forward-rounded" /></a>
 			</article>}
 		</div>
 	</section>

@@ -124,7 +124,7 @@ const travelCover = url("/images/albums/nanjing/cover.jpg");
 						{formatDate(latestDiary?.date ?? "2026-08-10")}
 					</time>
 					<h3 data-sky-shared-title>{latestDiary?.title ?? "夏日、蓝天与《鸟之诗》"}</h3>
-					<p>高考结束后的夏天，蓝天、白云与一首歌，留下关于自由的记忆。</p>
+					<p>{latestDiary?.content.split("\n\n")[0] ?? "高考结束后的夏天，蓝天、白云与一首歌，留下关于自由的记忆。"}</p>
 				</div>
 				<span class="card-action">
 					读这一章
